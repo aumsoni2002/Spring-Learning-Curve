@@ -1,0 +1,1055 @@
+------------------------------------------------------------------------------------------- Section 1 ---------------------------------------------------------------------------------------
+
+-- Spring Boot Overview
+
+• Spring in Nutshell
+Very popular framework for building Java applications
+Provides a large number of helper classes and annotations
+The Problem is building a traditional Spring application is really HARD!!!
+
+• Spring Boot Solution
+Make it easier to get started with Spring development
+Minimize the amount of manual configuration
+Perform auto-configuration based on props files and JAR classpath
+Help to resolve dependency conflicts (Maven or Gradle)
+Provide an embedded HTTP server so you can get started quickly
+Tomcat, Jetty, Undertow, ...
+
+• Spring Boot and Spring
+Spring Boot uses Spring behind the scenes
+Spring Boot simply makes it easier to use Spring
+
+
+-- Spring Initializer Demo
+
+• Spring Initializer 
+Quickly create a starter Spring project by going to http://start.spring.io
+Select your dependencies
+Creates a Maven/Gradle project
+Import the project into your IDE
+Eclipse, IntelliJ, NetBeans etc ...
+
+• Quick word on Maven
+When building your Java project, you may need additional JAR files
+For example: Spring, Hibernate, Commons Logging, JSON etc...
+One approach is to download the JAR files from each project web site
+Manually add the JAR files to your build path / classpath
+
+• Maven Solution
+Tell Maven, the projects you are working with (dependencies) like Spring, Hibernate etc ....
+Maven will go out and download the JAR files for those projects for you
+And Maven will make those JAR files available during compile/run
+Think of Maven as your friendly helper / personal shopper
+
+• Development Process
+1. Configure our project at Spring Initializr website http://start.spring.io
+2. Download the zip file
+3. Unzip the file
+4. Import the project into our IDE
+5. Give sometime to IDE to download all Maven Dependencies
+6. Run the main java file
+7. Simple go to localhost:8080 which is intialized and started by Tomcat.
+
+
+-- Create a REST Controller
+
+• Example for how to create a simple REST Controller
+  Project: 01-spring-boot-demo
+
+-- Spring Framework Overview - Part 1
+
+• Goals of Spring
+Lightweight development with Java POJOs (Plain-Old-Java-Objects)
+Dependency injection to promote loose coupling
+Minimize boilerplate Java code
+
+
+-- What is Maven?
+
+Maven is a Project Management tool. Most popular use of Maven is for build management and dependencies. When building your Java project, 
+you may need additional JAR files for example: Spring, Hibernate, Commons Logging, JSON etc. One approach is to download the JAR files from each project web site.
+Manually add the JAR files to your build path / classpath. Another approch is tell Maven, the projects you are working with (dependencies) like Spring, Hibernate etc.
+Maven will go out and download the JAR files for those projects for you. And Maven will make those JAR files available during compile/run. Think of Maven as your friendly 
+helper / personal shopper. 
+
+• Handling JAR Dependencies
+When Maven retrieves a project dependency. It will also download supporting dependencies like Spring depends on commons-logging.
+Maven will handle this for us automagically
+
+• Building and Running
+When you build and run your app ...
+Maven will handle class / build path for you
+Based on config file, Maven will add JAR files accordingly
+
+
+-- Maven Project Structure
+
+Normally when you join a new project
+Each development team dreams up their own directory structure
+Not ideal for new comers and not standardized
+Maven solves this problem by providing a standard directory structure
+
+• Standard Directory Structure
+Directory			Description
+src/mainijava			Your Java source code
+src/main/resources		Properties / config files used by your app
+src/main/webapp			JSP files and web config files other web assets (images, css, js, etc)
+src/test			Unit testing code and properties
+target				Destination directory for compiled code. Automatically created by Maven
+
+
+-- Maven Key Concepts
+
+• POM File - pom.xml
+POM Stands for Project Object Model File
+It is the configuration file for our project
+It is always located in the root for our project
+THe pom.xml file consist of three things: project meta data, dependencies and plug-ins.
+project meta data: Project name, version and Output file type: JAR, WAR, ...
+dependencies:      List of projects we depend on Spring, Hibernate, etc
+plug ins:	   Additional custom tasks to run: generate JUnit test reports etc
+
+
+• Project Coordinates
+Project Coordinates uniquely identify a project
+Similar to GPS coordinates for your house: latitude / longitude
+Precise information for finding your house (city, street, house #)
+
+Example:
+<groupId>com.springboot.demo</groupId>
+<artifactId>myFirstApp</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+
+
+-- Exploring Spring Boot Project Files - Part 1
+
+• Maven Standard Directory Structure
+Directory			Description
+src/mainijava			Your Java source code
+src/main/resources		Properties / config files used by your app
+src/test/java			Unit testing source code
+
+• Maven Wrapper files
+mvnw allows you to run a Maven project. There is no need to have Maven installed or present on your path. If correct version of Maven is NOT found on your computer
+it automatically downloads correct version and runs Maven.
+There are two files that are already provided: 
+mvnw.cmd for MS Windows	to run commands like	-->	mvnw clean comiple test
+mvnw.sh for Linux/Mac	to run commands like	-->	./mvnw clean comiple test
+
+• Maven POM file
+pom.xml includes info that you entered at Spring Initializr website. 
+It includes: Spring Boot Starters (A collection of Maven dependencies)
+             Spring Boot Maven plugin which is used to To package executable jar or war archive. And it can also easily run the app(./mvnw package) (-/mvnw spring-boot:run)
+
+• Java Source Code
+The Java Source Code includes:
+Main Spring Boot application class
+RestController that we created in an earlier video
+
+
+-- Exploring Spring Boot Project Files - Part 2
+
+• Application Properties
+By default, Spring Boot will load properties from: application.properties.
+The file 'application.properties' happens to be empty at the beginning.
+We can add spring boot properties:	
+server.port=8585
+We can also add our own custom properties:  
+coach.name=Mickey Mouse
+team.name=The Mouse Crew
+
+Now to make use of all those custom properties which we created into our 'application.properties', we can do with below code
+@RestController
+public class FunRestController {
+
+ @Value ("${coach.name}")
+ private String coachName;
+
+ @value ("${team.name}")
+ private String teamName;
+ 
+ ...
+} 
+
+• Static Content
+By default, Spring Boot will load static resources from "/static" directory
+Examples of static resources are HTML files, CSS, JavaScript, images etc.
+
+
+• Unit Tests
+It includes Spring Boot unit test class where we can add unit tests to the file.
+
+
+-- Spring Boot Starters
+
+• What is Spring Boot Starters?
+A curated list of Maven dependencies
+A collection of dependencies grouped together
+Tested and verified by the Spring Development team
+Makes it much easier for the developer to get started with Spring
+Reduces the amount of Maven configuration
+
+Spring Boot provides 'spring-boot-started-web' which is a collection of dependencies.
+It contain dependencies such as spring-web, spring-webmvc, hibernate-validator, json, tomcat etc.
+
+There are 30 plus Spring Boot Starters from the Spring Development team.
+Name				Description
+spring-boot-starter-web 	Building web apps, includes validation, REST. Uses Tomcat as default embedded server
+spring-boot-starter-securty	Adding spring security support
+spring-boot-starter-data-jpa	Spring database support with JPA and Hibernate
+...				...
+
+
+-- Spring Boot Parents for Starters
+
+Spring Boot provides a "Starter Parent"
+This is a special starter that provides Maven defaults
+<parent>
+ <groupId>org.springframework.boot</groupId>
+ <artifactId>spring-boot-starter-parent</artifactId>
+ <version>3.@.Q-RC1</version>
+ <relativePath/> <!/-- lookup parent from repository -->
+</parent>
+
+
+• Benefits of the Spring Boot Starter Parent
+Default Maven configuration: Java version, UTF-encoding etc
+Dependency management
+ Use version on parent only
+ spring-boot-starter-* dependencies inherit version from parent
+Default configuration of Spring Boot plugin
+
+
+-- Spring Boot Dev Tools - Overview
+
+Automatically restarts your application when code is updated
+Simply add the dependency to your POM file
+No need to write additional code :-)
+For IntelliJ, need to set additional configurations.
+
+When we add the dependency to our POM file. It will automatically restarts your application when code is updated
+<dependency>
+<groupId>org.springframework .boot</groupId>
+<artifactId>spring-boot-devtools</artifactId>
+</dependency> 
+
+• Development Process
+Steps:
+1. Apply IntelliJ configurations
+2. Edit pom.xml and add spring-boot-devtools
+3. Add new REST endpoint to our app
+4. Verify the app is automatically reloaded
+
+
+-- Spring Boot Dev Tools - Coding
+• Example for how to set devtools
+  Project: 02-dev-tools-demo 
+
+
+-- Spring Boot Actuator - Overview
+
+Exposes endpoints to monitor and manage your application
+You easily get DevOps functionality out-of-the-box
+Simply add the dependency to your POM file
+REST endpoints are automatically added to your application
+No need to write additional code!
+You get new REST endpoints for FREE!
+
+Once we add the dependency to your POM file. It enables Spring Boot Actuator.
+<dependency>
+    <groupId>org.springframework .boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+
+Automatically exposes endpoints for metrics out-of-the-box
+Endpoints are prefixed with: /actuator
+Name 		Description
+/health 	Health information about your application
+
+• Health Point
+/health checks the status of your application
+Normally used by monitoring apps to see if your app is up or down
+
+• Info Point
+By default, It is empty
+The /info endpoint can provide information about your application
+To expose /info: we need to make below changes
+File: src/main/resources/application.properties
+management.endpoints.web.exposure.include=health,info
+management.info.env.enabled=true
+
+we also need to update application.properties with your app info
+File: src/main/resources/application.properties
+info.app.name=My Super Cool App
+info.app.description=A crazy and fun app, yoohoo!
+info.app.version=1.0.0
+
+Properties starting with "info." will be used by /info
+
+• Other Spring Boot Actuator Endpoints
+There are 10+ Spring Boot Actuator endpoints:
+Name 			Description
+/auditevents 		Audit events for your application
+/beans 			List of all beans registered in the Spring application context
+/mappings 		List of all @RequestMapping paths
+
+
+• How to make use of all Spring Boot Actuator Endpoints
+By default, only /health is exposed
+To expose all actuator endpoints over HTTP
+File: src/main/resources/application.properties
+# Use wildcard "*" to expose all endpoints
+# Can also expose individual endpoints with a comma-delimited list
+management.endpoints.web.exposure.include=*		
+
+Above one line of code exposes all endpoints
+
+
+• Get a list of beans
+Access http://localhost:8080/actuator/beans
+
+• Development Process
+Steps:
+1. Edit pom.xml and add spring-boot-starter-acuator
+2. View actuator endpoints for: /health
+3. Edit application .properties to customize /info
+
+
+-- Spring Boot Actuator - Accessing Endpoints - Part 1
+• Example for how to set actuator
+  Project: 03-actuator-demo
+
+
+-- Spring Boot Actuator - Securing Endpoints - Overview
+
+• What about Security?
+We may NOT want to expose all of this information
+Add Spring Security to project and endpoints are secured. Below code enables Spring Security
+<dependency>
+    <groupid>org.springframework .boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactid>
+</dependency>
+
+• Secured Endpoints
+Once we put above dependency, and than if we access: /actuator/beans
+Spring Security will prompt for login where the 
+user name: user 
+Password: it will automatically generate into our terminal
+
+There is also one more way to set user name and password:
+We can override default user name and generated password
+File: src/main/resources/application.properties
+spring.security.user.name=scott
+spring.security.user.password=tiger
+
+• Customizing Spring Security
+We can customize Spring Security for Spring Boot Actuator
+Use a database for roles, encrypted passwords etc ...
+
+• Exclude endpoints 
+We can also exclude endpoints.
+To exclude /health and /info
+File: src/main/resources/application.properties
+# Exclude individual endpoints with a comma-delimited list
+management.endpoints.web.exposure.exclude=health, info
+
+• Development Process
+1. Edit pom.xml and add spring-boot-starter-security
+2. Verify security on actuator endpoints for: /beans etc
+3. Disable endpoints for /health and /info
+
+
+-- Spring Boot Actuator - Securing Endpoints - Coding
+• Example for how to secure actuator endpoints
+  Project: 04-actuator-security-demo
+
+
+-- Run Spring Boot apps from the Command Line - Overview
+
+• Running from the Command-Line
+When running from the command-line. There is no need to have IDE open/running
+Since we using Spring Boot, the server is embedded in our JAR file. There is no need to have separate server installed / running
+Because Spring Boot apps are self-contained.
+
+Two options for running the app from the command line:
+Option 1: Use 				-->	java -jar appName.jar(if you already have the jar file of your application)
+Option 2: Use Spring Boot Maven plugin	-->	1. mvnw package(this will create a jar file of our application)		2. mvnw spring-boot: run
+Remember the JAR file gets created in the 'target' subdirectory.
+
+•  Development Process
+1. Exit the IDE
+2. Package the app using mvnw package
+3. Run app using java -jar
+4. Run app using Spring Boot Maven plugin, mvnw spring-boot: run
+
+
+-- Run Spring Boot apps from the Command Line - Demo
+For This Example, I simply did below steps:
+1. Open my Bash Terminal into the application folder directly which is '05-command-line-demo'
+2. On the Git Bash Terminal, I run: ./mvnw package
+3. Now the above command creates a JAR file of our application into the 'target' folder.
+4. So I run: cd target to go inside the target folder.
+5. Now to run our application, I run the command: ava -jar  myFirstApp-0.0.1-SNAPSHOT.jar(which is the actual name of our application)
+ 
+
+-- Injecting Custom Application Properties - Overview
+
+• Application Properties File
+By default, Spring Boot reads information from a standard properties file which is located at: src/main/resources/application. properties
+We can define ANY custom properties in this Standard Spring Boot file.
+Once we write custom properties, Spring Boot app can access those properties using @Value.
+And there is no additional coding or configuration required.
+
+• Development Process
+Steps:
+1. Define custom properties in application.properties
+We can give ANY custom property names and as many as we want.
+File: src/main/resources/application.properties:
+# Define custom properties
+coach.name=Mickey Mouse
+team.name=The Mouse Club
+
+2. Inject properties into Spring Boot application using @Value
+@RestController
+public class FunRestController {
+
+// inject properties for: coach.name and team.name
+@Value ("${coach.name}")
+private String coachName;
+
+@Value ("${team.name}")
+private String teamName;
+
+...
+}
+
+-- Injecting Custom Application Properties - Coding
+• Example for inject custom application properties into a java file
+  Project: 06-properties-demo
+
+
+-- Configuring the Spring Boot Server - Overview
+Spring Boot can be configured in the application. properties file
+Server port, context path, actuator, security etc.
+Spring Boot has over 1000 properties.
+The properties are roughly grouped into the following categories:
+Core, Web, Security, Data, Actuator, Integration, DevTools, Testing
+
+
+• Core Properties
+File: src/main/resources/application.properties
+# Log levels severity mapping
+# Set logging levels based on package names
+logging.level.org.springframework=DEBUG
+logging.level.org.hibernate=TRACE
+logging.level.com. luv2code=INFO
+# Log file name
+logging.file=my-crazy-stuff.log
+
+• Web Properties
+File: src/main/resources/application.properties
+# HTTP server port, The default server local host is 8080
+server.port=7070
+# Context path of the application, The default context path is '/'
+server.servlet.context-path=/my-silly-app
+# Default HTTP session time out, The default session time out is 30min.
+server.servlet.session.timeout=15m
+
+• Actuator Properties
+File: src/main/resources/application.properties
+# Endpoints to include by name or wildcard
+management.endpoints.web.exposure.include=*
+# Endpoints to exclude by name or wildcard
+management.endpoints.web.exposure.exclude=beans,mapping
+# Base path for actuator endpoints
+Management.endpoints.web.base-path=/actuator
+
+• Security Properties
+File: src/main/resources/application.properties
+# Change default user name
+spring.security.user.name=admin
+# Chaneg password for default user
+spring.security.user.password=topsecret
+
+• Data Properties
+File: srcimain/resources/application. properties
+# JDBC URL of the database
+spring.datasource.url=jdbc:mysql: //localhost :3306/ecommerce
+# Login username of the database
+spring.datasource.username=scott
+# Login password of the database
+spring.datasource.password=tiger
+
+• Development Process
+Steps:
+1. Configure the server port
+2. Configure the application context path
+
+
+
+------------------------------------------------------------------------------------------- Section 2 ---------------------------------------------------------------------------------------
+
+-- What is Inversion of Control?
+Inversion of Control (IoC) is a design pattern in object-oriented programming where the control of object creation 
+and management is inverted from the application code to an external framework.
+
+• Spring Container
+Primary functions: 
+ Create and manage objects (Inversion of Control)
+ Inject object dependencies (Dependency Injection)
+
+• Configuring Spring Container: 3 ways
+XML configuration file (legacy)
+Java Annotations (modern) 
+Java Source Code (modern)
+
+
+-- Defining Dependency Injection - Overview - Part 1
+
+• Dependency Injection
+The dependency inversion principle.
+The client delegates to another object the responsibility of providing its dependencies.
+
+• Injection Types
+There are multiple types of injection with Spring
+The two recommended types of injection: 
+Constructor Injection
+ Use this when you have required dependencies
+ Generally recommended by the spring.io development team as first choice
+Setter Injection
+ Use this when you have optional dependencies
+ If dependency is not provided, your app can provide reasonable default logic
+
+• What is Spring AutoWiring
+For dependency injection, Spring can use autowiring
+Spring will look for a class that matches by type: class or interface
+Spring will inject it automatically ... hence it is autowired
+
+• @Component annotation
+@Component marks the class as a Spring Bean
+A Spring Bean is just a regular Java class that is managed by Spring
+@Component also makes the bean available for dependency injection
+
+
+-- Defining Dependency Injection - Overview - Part 1
+• Example Application
+Web Browser	---- /dailyWorkout ---->		DemoController		---- getDailyWorkout() ---->		Coach
+Web Browser	---- Practice Fast Bowling ---->	DemoController		---- "Practice Fast Bowling" ---->	Coach
+
+• Development Process - Constructor Injection
+1. Define the dependency interface and class
+2. Create Demo REST Controller
+3. Create a constructor in your class for injections
+4. Add @GetMapping for /dailyworkout
+
+
+-- Constructor Injection - Coding - Part 1
+Generating A Maven Project through https://start.spring.io/
+
+
+-- Constructor Injection - Coding - Part 2
+• Example for how to use constructor injection 
+  Project: 01-constructor-injection
+
+
+--  Constructor Injection - Behind the Scenes
+
+• How Spring Process our application
+// All bellow code is happening behind the scenes:
+Coach theCoach = new CricketCoach();	
+DemoController demoController = new DemoController(theCoach); 		<-- Constructor Injection
+
+
+--  Component Scanning - Overview
+
+• Scanning for Component Classes
+Spring will scan your Java classes for special annotations
+ @Component, etc...
+It will automatically register the beans in the Spring container
+In the project: 01-constructor-injection, 
+we have a Main Spring Boot Class: SpringcoredemoApplicaiton.java which is is created by Spring Initializer: https://start.spring.io/
+Now this file imports: org.springframework.boot.autoconfigure.SpringBootApplication
+because of which we were able to put the annotation: @SpringBootApplication
+Now this annotation enables: Auto configuration, Component scanning, Additional configuration
+Behind the Scenes, The @SpringBootApplication composed of @EnableAutoConfiguration, @ComponentScan and @Configuration annotations.
+
+• Annotations
+@SpringBootApplication is composed of the following annotations:
+
+Annotation 			Description
+@EnableAutoConfiguration 	Enables Spring Boot's auto-configuration support
+@ComponentScan			Enables component scanning of current package. Also recursively scans sub-packages
+@Configuration			Able to register extra beans with @Bean or import other configuration classes
+
+• About SpringApplication.run
+Here the ' SpringApplication.run ' bootstraps our spring boot application.
+And in ' SpringApplication.run(SpringcoredemoApplication.class, args); ', we have to write the actual name of our class to
+give a reference.
+Behind the Scenes, This both above lines will create the application context, registers all beans and starts the embedded serve.
+
+• More on Component Scanning
+By default, Spring Boot starts component scanning
+ From same package as your main Spring Boot application
+ Also scans sub-packages recursively
+This implicitly defines a base search package
+ Allows you to leverage default component scanning
+ No need to explicitly reference the base package name
+
+• Explicitly list base packages to scan
+@springBootApplication(
+scanBasePackages={"com.practice.springcoredemo",
+                  "com.practice.util",
+                  “org.acme.cart",
+                  "edu.cmu.srs"})
+public class SpringcoredemoApplication {
+    ...	
+}
+
+
+-- Component Scanning - Coding - Part 1
+-- Component Scanning - Coding - Part 2
+• Example for how to list baseScanPackages in Main Application and let spring boot component scan outsider packages
+  Project: 02-component-scanning
+
+
+-- Setter Injection - Overview
+
+• Autowiring Example
+First we will inject a Coach implementation. Than spring will scan for @Components and finds if there is any class that implements the Coach interface.
+If yes there is one, it will inject it. For example: CricketCoach.
+
+• Injection Types - Which one to use?
+Constructor Injection
+ Use this when you have required dependencies
+ Generally recommended by the spring.io development team as first choice
+Setter Injection
+ Use this when you have optional dependencies
+ If dependency is not provided, your app can provide reasonable default logic
+
+• Development Process - Setter Injection
+1. Create setter method(s) in your class for injections
+2. Configure the dependency injection with @Autowired Annotation
+
+• Example for how to use setter injection
+  Project: 03-setter-injection
+
+
+-- Field Injection
+
+• Spring Injection Types
+Recommended by the spring.io development team
+ Constructor Injection: required dependencies
+ Setter Injection: optional dependencies
+Not recommended by the spring.io development team
+Field Injection
+
+• Why Field Injection is no longer in use?
+In the early days, field injection was popular on Spring projects
+ In recent years, it has fallen out of favor
+In general, it makes the code harder to unit test
+As a result, the spring.io team does not recommend field injection
+ However, you will still see it being used on legacy projects
+
+• How it works?
+Field Injection is the idea of injecting in dependencies by setting the values on your class directly, even on private fields
+and this is accomplished by Java Reflection.
+
+Steps:
+1. Configure the dependency injection with Autowired Annotation
+File: DemoController.java
+import org.springframework.beans.factory.annotation.Autowired;
+@RestController
+public class DemoController {
+    @Autowired
+    private Coach myCoach; 		// we have autowired the field here so that is why it is Field injection
+    // no need for constructors or setters
+
+   @GetMapping(" /dailyworkout")
+   public String getDailyWorkout() {
+       return myCoach.getDailyWorkout();
+   } 
+}
+
+
+-- Qualifiers - Overview
+
+• Autowiring Example
+First we will inject a Coach implementation. Than spring will scan for @Components and finds if there is any class that implements the Coach interface.
+If yes, but this time there are multiple of them, So spring will make use of Qualifiers to find one class that we wanted it to get injected.
+
+• How it Works?
+In our project, we have an interface 'Coach' and only one class 'CricketCoach' that implements 'Coach'. So it easy straight forward for spring to inject 
+dependency if there is only one class that is implementing 'Coach'. 
+Now consider that we have multiple classes that is implementing 'Coach' interface, Now how spring will know which class to choose.
+
+If we have classes such as 'CricketCoach', 'BaseballCoach', 'TrackCoach' and 'TenisCoach', The Spring will show us below error when we run it:
+ Parameter 0 of constructor in com.luv2code.springcoredemo.rest.DemoController
+ required a single bean, but 4 were found:
+ baseballCoach
+ cricketCoach
+ tennisCoach
+ trackCoach
+
+Now the solution here is to make use of ' @Qualifier("className") ' in the autowired constructor or setter function.
+// File: DemoController.java (Constructor Example)
+@Autowired
+public DemoController(@Qualifier("cricketCoach") Coach theCoach) {// here we are telling spring tha make use of 'cricketCoach' class as the injection. While implementing 'Coach' interface. 
+myCoach = theCoach;
+}
+
+// File: DemoController.java (Setter Example)
+@Autowired
+public void setMyCoach(@Qualifier("cricketCoach") Coach theCoach) {// here we are telling spring tha make use of 'cricketCoach' class as the injection. While implementing 'Coach' interface. 
+myCoach = theCoach;
+}
+
+
+-- Qualifiers - Coding - Part 1
+-- Qualifiers - Coding - Part 2
+
+• Example for how to use Qualifier Annotaion
+  Project: 04-qualifiers
+
+
+-- Primary - Overview
+ 
+• Resolving issue with Multiple Coach implementations
+In the case of multiple Coach implementations. We resolved it using @Qualifier that is by specifing a coach by name
+However there is also an Alternate solution.
+
+• How it works?
+Instead of putting the 'Qualifier' Annotation and specifing which class should be used.
+We can just put the 'Primary' Annotation right above the Class which we wanted to be get used.
+Example:
+// File: TrackCoach.java
+import org.springframework.context .annotation.Primary;
+import org.springframework.stereotype.Component;
+@Component
+@Primary						// with this annotation, the spring will know that it has to use this class as an injection.
+public class TrackCoach implements Coach {
+    @override
+    public String getDailyWorkout() {
+    return "Run a hard 5k!";
+    }
+}
+
+• If 'Primary' Annotation used more than once
+The Primary Annotation can only be used once in case of Multiple Impletation.
+If we try to mark multiple classes with Primary Annotation, we will get below error:
+Unsatisfied dependency expressed through constructor parameter 0:
+No qualifying bean of type 'com.luv2code.springcoredemo.common.Coach' available:
+more than one ‘primary' bean found among candidates:
+[baseballCoach, cricketCoach, tennisCoach, trackCoach]
+
+• Mixing @Primary and @Qualifier
+Firstly we can use both annotations at same time. But you might have to be careful which to use when.
+Secondly, @Qualifier has higher priority that is if we used @Qualifier for 'CricketCoach' and @Primary for 'TrackCoach', Than Spring will go and use 'CricketCoach'.
+
+• Which one: @Primary or @Qualifier?
+@Primary leaves it up to the implementation classes
+ Could have the issue of multiple @Primary classes leading to an error
+@Qualifier allows to you be very specific on which bean you want
+In general, I recommend using @Qualifier
+ It is more specific.
+ It has higher priority.
+
+
+-- Primary - Coding
+• Example for how to use Primary Annotaion
+  Project: 05-primary
+
+
+-- Lazy Initialization - Overview
+
+• Initialization
+By default, when our application starts, all beans are initialized so it will scan for all components such as @Component and those components will instialized. 
+So spring will create an instance of each and make them available.
+
+Now to see that all beans have been initialized on the start of our application, we can put a println statement which prints each class's name:
+// File: CricketCoach.java
+public CricketCoach() {
+    System.out.println("In constructor: " + getClass().getSimpleName());
+}
+
+// File: BaseballCoach.java
+public BaseballCoach() {
+    System.out.println("In constructor: " + getClass().getSimpleName());
+}
+
+// File: TennisCoach.java
+public TennisCoach() {
+    System.out.println("In constructor: " + getClass().getSimpleName());
+}
+
+// File: TrackCoach.java
+public TrackCoach() {
+    System.out.println("In constructor: " + getClass().getSimpleName());
+} 
+
+Now once we run the application, all the beans that is our classes which spring converts them into beans once we put the '@Component' will get initialized 
+and the terminal will show below lines:
+In constructor: BaseballCoach
+In constructor: CricketCoach
+In constructor: TennisCoach
+In constructor: TrackCoach
+
+Now there is usually not need of all beans to get intialized at time of application start.
+Now to resolve that, we can make use of 'Lazy Initialization' Annotation.
+
+• Lazy Initialization
+Instead of creating all beans up front, we can specify lazy initialization
+A bean will only be initialized in the following cases:
+ It is needed for dependency injection
+ Or itis explicitly requested
+Add the @Lazy annotation to a given class
+Example:
+// File: TrackCoach
+import org.springframework.context annotation.Lazy;
+import org.springframework.stereotype.Component;
+@Component
+@Lazy						// this will implement Lazy Initialization to this class.
+public class TrackCoach implements Coach {
+    public TrackCoach() {
+        System.out.println("In constructor: " + getClass().getSimpleName());
+    }
+}
+
+
+• Lazy Iniitialization - Global configuration
+We can also use this Annotation on all our beans at one time which is with the help of 'application.properties' file.
+File: application.properities
+spring.main.lazy-initialization=true
+
+Now with above line of declaration, All beans are lazy, no beans will get created untill needed, including our DemoController.
+If we consider our Coach project, So once we access our REST endpoint of '/dailyworkout', then spring will determine the dependencies
+for the DemoController. And for the dependency resolution, spring will create instance of 'CricketCoach' first then create instance
+of 'DemoController' and injects the 'CricketCoach'.
+ 
+• Advantages of using Lazy Initialization
+Only create objects as needed
+May help with faster startup time if you have large number of components
+
+• Disadvantages
+If you have web related components like @RestController, not created until requested
+May not discover configuration issues until too late
+Need to make sure you have enough memory for all beans once created
+
+
+-- Lazy Initialization - Coding - Part 1
+-- Lazy Initialization - Coding - Part 2
+• Example for how to use Lazy Initialization Annotaion
+  Project: 05-lazy-initialization
+
+
+-- Bean Scopes - Overview
+Scope refers to the lifecycle of a bean such as:  How long does the bean live? How many instances are created? How is the bean shared?
+
+• Singleton Scope
+Now the default scope is singleton.
+Singleton means that by default, the Spring Container creates only one instance of the bean. It is catched in memory. And all dependency injections
+for the bean will reference the same bean.(Single item that is created in memory and shared amongst different other items.) 
+Singleton Example:
+@RestController
+public class DemoController {
+    // Here we have created two references and both will point at the same instance.
+    private Coach myCoach;			
+    private Coach anotherCoach;
+
+    @Autowired
+    public DemoController(
+                  @Qualifier("cricketCoach") Coach theCoach,			// first reference points at the 'CricketCoach' instance.
+                  @Qualifier("cricketCoach") Coach theAnotherCoach) {		// Second reference also points at the same above 'CricketCoach' instance.
+        myCoach = theCoach;
+        anotherCoach = theAnotherCoach;
+    }
+}
+
+• Explicitly Specify Bean Scope
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation. Scope;
+import org.springframework.stereotype.Component;
+
+@Component
+@Scope (ConfigurableBeanFactory.SCOPE_SINGLETON)				// this is how we can explicitly specify bean scope
+public class CricketCoach implements Coach {
+    ...
+}
+
+• Additional Spring Bean Scopes
+Scope		Description
+singleton	Create a single shared instance of the bean. Default scope.
+prototype	Creates a new bean instance for each container request.
+request		Scoped to an HTTP web request. Only used for web apps.
+session		Scoped to an HTTP web session. Only used for web apps.
+global-session	Scoped to a global HTTP web session. Only used for web apps.
+
+
+• Prototype Scope Example: a new object instance is created for each injection
+// File: CricketCoach.java
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation. Scope;
+import org.springframework.stereotype.Component;
+
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)		// we have to specify the scope here in 'CricketCoach' class.
+public class CricketCoach implements Coach {
+    ...
+}
+
+// File: DemoController.java
+@RestController
+public class DemoController {
+    // Here we have created two references and both will point at the two different instances.
+    private Coach myCoach;
+    private Coach anotherCoach;
+
+    @Autowired
+    public DemoController(
+		  // Here we have done two injections of same class 'CricketCoach', as we have specified 'Prototype' scope, a new object instance is created for each injection
+                  @Qualifier("cricketCoach") Coach theCoach,			// first reference will point at one instance of 'CricketCoach'
+                  @Qualifier("cricketCoach") Coach theAnotherCoach) {	        // second reference will point at second instance of 'CricketCoach'
+        myCoach = theCoach;
+        anotherCoach = theAnotherCoach;
+    }
+}
+
+
+-- Bean Lifecyle Methods - Overview 
+
+• Bean Lifecycle
+Spring Container Started --> beans are instantiated --> dependencies are injected --> internal spring processing occurs --> excutes our custom initialization method
+After method gets execute --> Bean is ready to use --> once we use it --> Spring Container gets shutdown --> executes our custom destroy method.																	
+
+• Bean Lifecycle Methods / Hooks
+You can add custom code during bean initialization
+ Calling custom business logic methods
+ Setting up handles to resources (db, sockets, file etc)
+You can add custom code during bean destruction
+ Calling custom business logic method
+ Clean up handles to resources (db, sockets, files etc)
+
+• Initialization of Method configuration
+@Component
+public class CricketCoach implements Coach {
+    public CricketCoach() {
+        System.out.println("In constructor: “ + getClass().getSimpleName());
+    }
+
+    @PostConstruct	// With the help of this annotation, we have added our own custom initialization code, once the bean has been constructed.
+    public void doMyStartupStuff() {
+    System.out.println("In doMyStartupStuff(): " + getClass().getSimpleName());
+    }
+
+    @PreDestroy		// With the help of this annotation, we have added our own custom cleanup code, which will run just before the bean gets destructed.
+    public void doMyCleanupStuff() {
+    System.out.println("In doMyStartupStuff(): " + getClass().getSimpleName());
+    }
+}
+ 
+• Development Process
+1. Define your methods for init and destroy
+2. Add annotations: @PostConstruct and @PreDestroy
+
+
+-- Special Note about Prototype Scope - Destroy Lifecycle Method and Lazy Initializ
+• Prototype Beans and Destroy Lifecycle
+There is a subtle point you need to be aware of with "prototype" scoped beans.
+For "prototype" scoped beans, Spring does not call the destroy method. Gasp!
+
+In contrast to the other scopes, Spring does not manage the complete lifecycle of a prototype bean: the container instantiates, configures, 
+and otherwise assembles a prototype object, and hands it to the client, with no further record of that prototype instance.
+Thus, although initialization lifecycle callback methods are called on all objects regardless of scope, in the case of prototypes, configured 
+destruction lifecycle callbacks are not called. The client code must clean up prototype-scoped objects and release expensive resources that 
+the prototype bean(s) are holding.
+
+• Prototype Beans and Lazy Initialization
+Prototype beans are lazy by default. There is no need to use the @Lazy annotation for prototype scopes beans.
+
+
+-- Java Config Bean - Overview
+
+In this is program, we will create a new Class 'SwimCoach' and we will not use any special annotations like '@Component' to configure it as bean.
+Instead we will configure it using @Bean annotation.
+
+• Development Process
+1. Create @Configuration class
+package com. luv2code.springcoredemo.config;
+import org.springframework.context.annotation.Configuration;
+@configuration								// With this annotation, we are declaring 'SportConfig' a configuration class for configuring spring.
+public class SportConfig {
+    ...
+}
+
+2. Define @Bean method to configure the bean
+package com. luv2code.springcoredemo.config;
+import com. luv2code.springcoredemo.common.Coach;
+import com. luv2code.springcoredemo.common.SwimCoach;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+@Configuration
+public class SportConfig {
+    @Bean
+    public Coach swimCoach() {		// The bean id defaults to the method name, So this bean will have a bean id of SwimCoach.
+        return new SwimCoach();		// returing a new instance of SwimCoach. Here we are manually constructing the object and returning to given caller. 
+    }
+}
+
+3. Inject the bean into our controller
+import com.practice.springcoredemo.common.Coach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+@RestController
+public class DemoController {
+    private Coach myCoach;
+    @autowired
+    public DemoController(@Qualifier("swimCoach") Coach theCoach) {			// here we made use of the bean id 'swimCoach' to inject it.
+        System.out.println("In constructor: " + getClass().getSimpleName());
+        myCoach = theCoach;
+    }
+}
+
+
+• Use case for @Bean
+Make an existing third-party class available to Spring framework
+You may not have access to the source code of third-party class
+However, you would like to use the third-party class as a Spring bean
+
+• Real-World Project Example
+Our project used Amazon Web Service (AWS) to store documents
+ Amazon Simple Storage Service (Amazon S3)
+ Amazon S3 is a cloud-based storage system
+ can store PDF documents, images etc
+We wanted to use the AWS S3 client as a Spring bean in our app
+The AWS S3 client code is part of AWS SDK
+ We can’t modify the AWS SDK source code
+ We can’t just add @Component
+However, we can configure it as a Spring bean using @Bean
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

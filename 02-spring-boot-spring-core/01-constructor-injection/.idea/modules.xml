@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/01-constructor-injection.iml" filepath="$PROJECT_DIR$/.idea/01-constructor-injection.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springcoredemo/springcoredemo.iml" filepath="$PROJECT_DIR$/springcoredemo/springcoredemo.iml" />
+    </modules>
+  </component>
+</project>
