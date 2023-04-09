@@ -52,5 +52,17 @@ public class StudentDAOImpl implements StudentDAO {// creating a class 'StudentD
         return theQuery.getResultList();
     }
 
+    @Override
+    @Transactional  // when a method does create, update or delete within the database through a method, That method should have this annotation
+    public void update(Student theStudent) {
+        entityManager.merge(theStudent);        // here we are updating the existed student object into our database table.
+    }
+
+    @Override
+    @Transactional
+    public void delete(Integer id){
+        Student theStudent = entityManager.find(Student.class, id); // here we will send the above 'id' and the 'Student' class as argument to find the data which has the same id.
+        entityManager.remove(theStudent); // here we are removing the existed student object from our database table.
+    }
 
 }

@@ -7,8 +7,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.util.List;
-
 @SpringBootApplication
 public class CruddemoApplication {
 
@@ -21,9 +19,7 @@ public class CruddemoApplication {
     public CommandLineRunner commandlineRunner(StudentDAO studentDAO) { // here we are injecting an object 'studentDAO' of type 'StudentDAO' to use this interface's methods
         return runner -> {
             // createStudent(studentDAO);        // here we are sending the same object to the method 'createStudent' as an argument.
-            // readStudent(studentDAO);
-            // queryAllStudents(studentDAO);
-            queryStudentByLastName(studentDAO);
+            readStudent(studentDAO);
         };
     }
 
@@ -62,27 +58,6 @@ public class CruddemoApplication {
 
         // Printing the returned student Object
         System.out.println("Found the student: " + readSecondStudent);
-    }
-
-    private void queryAllStudents(StudentDAO studentDAO) {
-        // here we are calling 'findAll' method of 'StudentDAO' interface which will find all the student objects from database table and return it
-        List<Student> allStudents = studentDAO.findAll();
-
-        // Printing all student objects through enhanced for loop
-        for (Student eachStudent : allStudents) {
-            System.out.println(eachStudent);
-        }
-    }
-
-    private void queryStudentByLastName(StudentDAO studentDAO) {
-        // here we are calling 'findByLastName' method of 'StudentDAO' interface which will find all the student objects whose
-        // last name is 'soni' from database table and return it
-        List<Student> allStudents = studentDAO.findByLastName("soni");
-
-        // Printing all student objects through enhanced for loop
-        for (Student eachStudent : allStudents) {
-            System.out.println(eachStudent);
-        }
     }
 }
 

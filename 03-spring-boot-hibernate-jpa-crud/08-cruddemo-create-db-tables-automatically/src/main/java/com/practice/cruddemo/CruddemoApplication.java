@@ -20,10 +20,13 @@ public class CruddemoApplication {
     @Bean
     public CommandLineRunner commandlineRunner(StudentDAO studentDAO) { // here we are injecting an object 'studentDAO' of type 'StudentDAO' to use this interface's methods
         return runner -> {
-            // createStudent(studentDAO);        // here we are sending the same object to the method 'createStudent' as an argument.
+             createStudent(studentDAO);        // here we are sending the same object to the method 'createStudent' as an argument.
             // readStudent(studentDAO);
             // queryAllStudents(studentDAO);
-            queryStudentByLastName(studentDAO);
+            // queryStudentByLastName(studentDAO);
+            // updateStudent(studentDAO);
+            // deleteStudent(studentDAO);
+            //   deleteAllStudent(studentDAO);
         };
     }
 
@@ -83,6 +86,30 @@ public class CruddemoApplication {
         for (Student eachStudent : allStudents) {
             System.out.println(eachStudent);
         }
+    }
+
+    private void updateStudent(StudentDAO studentDAO) {
+        int studentId = 1;      // we are going to change firstName and email whose id is 1.
+        System.out.println("Getting student with id: " + studentId);
+        System.out.println("Updating the student...");
+
+        Student toBeupdatedStudent = studentDAO.findById(studentId); // finding a student object with id equals to 1.
+        toBeupdatedStudent.setFirstName("amit");    // change first name to "amit"
+        toBeupdatedStudent.setEmail("amitsoni1971@gmail.com");  // change email to "amitsoni1971@gmail.com"
+
+        studentDAO.update(toBeupdatedStudent);  // updating new changes into our database.
+        System.out.println(toBeupdatedStudent);
+    }
+
+    private void deleteStudent(StudentDAO studentDAO){
+        int studentId = 1;
+        System.out.println("deleting student with id: " + studentId);
+        studentDAO.delete(studentId);
+    }
+
+    private void deleteAllStudent(StudentDAO studentDAO){
+        int numOfRowsDeleted = studentDAO.deleteAll();
+        System.out.println("Total Students deleted: " + numOfRowsDeleted);
     }
 }
 

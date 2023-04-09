@@ -1028,21 +1028,774 @@ The AWS S3 client code is part of AWS SDK
 However, we can configure it as a Spring bean using @Bean
 
 
+------------------------------------------------------------------------------------------- Section 3 ---------------------------------------------------------------------------------------
+
+-- Hibernate / JPA Overview
+• What is Hibernate?
+A framework for persisting / saving Java objects in a database
+Our Java	-->	Hibernate	-->	Database
+App		<-- 			<--
+
+• Benefits of Using Hibernate
+Hibernate handles all of the low-level SQL
+Minimizes the amount of JDBC code you have to develop
+Hibernate provides the Object-to-Relational Mapping (ORM)
+
+• What is Object-To-Relational Mapping (ORM)
+The developer defines mapping between Java class and database table
+
+Example:
+Java Class		-->	HIBERNATE		-->	Database Table
+Student			<--	(Middleware)		<--	Student
+id: int								id INT
+firstName: String						first_name VARCHAR(45)
+lastName: String						last_name VARCHAR(45)
+email: String							email VARCHAR(45)
+
+As you can see in above example, On the far left side we have our Java Class 'Student'. On the far right side, we have our Database Table 'Student'.
+Now the Hibernate works as a Middleware, It will set a one-to-one mapping between the fields of our java class and the actual columns in database.
+We can set up this mapping via configuration file via XML or through Java Annotations.
+
+• What is JPA?
+JPA stands for Jakarta Persistence API(JPA), previously known as Java Persistence API.
+It is a standard API for Object-to-Relational-Mapping (ORM)
+It is only a specification which defines a set of interfaces and requires an implementation to be useable.
+
+• JPA - Vendor Implementations
+One of the most popular implementations for JPA is 'Hibernate'.
+Just like Java Coding, It take those interfaces and it provides an implementation of those given interfaces.
+
+• Benefits of Using JPA
+By having a standard API, you are not locked to vendor's implementation
+Maintain portable, flexible code by coding to JPA spec (interfaces)
+Can theoretically switch vendor implementations
+ For example, if Vendor ABC stops supporting their product
+ You could switch to Vendor XYZ without vendor lock in
+
+• Example for JPA - Vendor Implementations
+Suppose, we have an application 'MyBizApp' and we are writing our DAO code based on the JPA spec.
+Now in one version of our project, we are using 'EclipseLink' as our vendor implementation, and in second version of our project, we want to 
+change our vendor implementation to 'Hibernate'. Now this swapping of JPA Vendor Application is easily possible. We only will have to make 
+minimal code changes as we are writing code to the standard specification. That is we simply have to tell our configuration to which vendor 
+to use.   
+ 
+• Saving a Java Object with JPA
+Student theStudent = new Student("aum", "soni", “aumsoni2002@gmail.com");	// create Java object
+entityManager.persist (theStudent);						// save it to database, 'entityManager' is a special JPA helper object.
+With above lines of code, the data will get stored in the database.
+
+• Retrieving a Java Object with JPA
+Student theStudent = new Student("aum", "soni", “aumsoni2002@gmail.com");	// create Java object
+entityManager.persist (theStudent);						// save it to database, 'entityManager' is a special JPA helper object.
+
+// the database will automatically give our first object the id '1'. And with the help of that id, we can retrieve that object from database. 
+int theId = 1;									// now retrieve from database using the primary key
+Student myStudent = entityManager.find(Student.class, theId);			// 1st Parameter: NameOfTable.class, 2nd Parameter: id in integer to find a particular object.
+
+• Querying for Java Objects
+Let us retrieve/Query all students object from the 'Student' database table
+
+TypedQuery<Student> theQuery = entityManager.createQuery("from Student", Student.class); // here we are saving a list of all student objects into 'theQuery'.
+List<Student> students= theQuery.getResultList();					 // Now to retrieve all those objects, we have to make use of 'getResultList()'.
+
+
+-- Hibernate, JPA and JDBC
+• How does Hibernate/JPA relate to JDBC?
+Hibernate/JPA uses JDBC in the background for all database communications
+Hibernate/JPA is just an another layer of abstraction on top of JDBC.
+So when our application uses the Hibernate/JPA framework, our app will actually store and retrieve the objects using the JPA API.
+Hibernate/JPA does a lot of the low-level work for you, but in the background, it all goes through the standard JDBC API.
+
+
+-- Setting up Development Enviornment
+• MySQL Database
+In this learning, we will use the MySQL Database
+MySQL includes two components 
+ MySQL Database Server
+ MySQL Workbench
+
+• MySQL Database Server
+The MySQL Database Server is the main engine of the database
+Stores data for the database
+Supports CRUD features on the data
+
+• MySQL Workbench
+MySQL Workbench is a client GUI for interacting with the database
+Create database schemas and tables
+Execute SQL queries to retrieve data
+Perform insert, updates and deletes on data
+Handle administrative functions such as creating users
+
+• Setting up Database Table - Overview
+For this learning/project, we will be using two database scripts:
+File: 01-create-user.sql
+This file creates a new MySQL user for our application with user-id: springstudent and password: springstudent
+
+File: 02-student-tracker.sql
+This file creates a new database table: student
+And four fields in it: id, first_name, last_name and email
+
+
+-- Setting Up Database Table - Coding
+Steps:
+1. Open MySQL Workbench
+2. Open the 'root' MySQL Connections which you created while doing installation process.
+3. Goto: File --> Open SQL Script --> open '01-create-user.sql'
+4. Now to create a new user: Run the above opened sql file by clicking on the golden thunder sign on workbench.
+5. We have successfully created a new user. 
+6. Now we have to create a new user for that newly created user.
+7. Goto: Home Page --> Click on plus button which is right after 'MySQL Connections' --> Enter 'Connection name' and 'username' 
+8. --> Click 'Test Connection' --> Enter password --> Click ok 
+9. Now we have created a new connection.
+10. Goto: Open 'springstudent' connection --> File --> Open SQL Script --> open '02-student-tracker.sql'
+11. Now to create a new schemas: Run the above opened sql file by clicking on the golden thunder sign on workbench.
+12. Goto: Schemas --> Refresh --> You will find 'student_tracker'
+
+
+-- Setting Up Spring Boot Project - Overview
+
+• Automatic Data Source Configuration
+In Spring Boot, Hibernate is the default implementation of JPA
+EntityManager is main component for creating queries etc
+EntityManager is from Jakarta Persistence API (JPA)
+Based on configs, Spring Boot will automatically create the beans: DataSource, EntityManager, ...
+We can then inject these into our app, for example our DAO
+
+• Setting up Project with Spring Initialzr
+At Spring Initializr website, start.spring.io
+Add dependencies
+ MySQL Driver: mysql-connector-j
+ Spring Data JPA: spring-boot-starter-data-jpa
+
+• Spring Boot - Auto configuration
+Spring Boot will automatically configure our data source for us.
+Based on entries from Maven pom file
+ JDBC Driver: mysql-connector-j
+ Spring Data (ORM): spring-boot-starter-data-jpa
+Spring boot reads DB connection info from application .properties
+
+File: application.properties
+spring.datasource.url=jdbc:mysql://localhost:3306/student_tracker
+spring.datasource.username=springstudent
+spring.datasource.password=springstudent
+
+No need to give JDBC driver class name Spring Boot will automatically detect it based on URL.
+
+• Creating Spring Boot - Command Line App
+We will create a Spring Boot - Command Line App
+This will allow us to focus on Hibernate / JPA
+Later in the learning, we will apply this to a CRUD REST API
+
+Example:
+import org. springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot. autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+@SpringBootApplication
+public class Cruddemoapplication {
+    public static void main(String[] args) {
+        SpringApplication.run(CruddemoApplication.class, args);
+    }
+
+   @Bean
+   public CommandLineRunner commandlineRunner(String[] args) {
+       return runner -> {
+          System.out.println("Hello world");
+       }; 
+   }
+}
+
+This above CommandLineRunner is from the Spring framework, which is basically  a hook that allows us to execute code
+after the Spring Beans have been loaded into the application context.
+Inside it, we have a return statement 'runner' which is a Lambda Expression where we can basically add our custom code to interact with the database.
+
+ 
+-- Setting Up Spring Boot Project - Coding - Part 1
+-- Setting Up Spring Boot Project - Coding - Part 2
+• Example for how to setup project for making use of Hibernate/JPA for crud operations
+  Project: 01-cruddemo-student
+
+
+-- JPA Annotations - Overview
+
+• JPA Dev Process - To Do List
+1. Annotate Java Class
+2. Develop Java Code to perform database operations
+
+• Terminology
+Entity Class: It is just a Java Class that is mapped to a database table.
+
+• Object-To-Relational Mapping (ORM)
+We have our Java class called 'Student' that has four fields, id, firstName, lastName, and email, we'll make use of JPA, 
+and we'll map it to a given database table called 'Student' that has four columns, id, first_name, last_name, and email.
+So we need to kind of provide mappings between the two.
+
+As we know, Hibernate is the default JPA implementation in Spring Boot.
+Example:
+Java Class		-->	HIBERNATE/JPA		-->	Database Table
+Student			<--	(Middleware)		<--	Student
+id: int								id INT
+firstName: String						first_name VARCHAR(45)
+lastName: String						last_name VARCHAR(45)
+email: String							email VARCHAR(45)
+
+• Entity Class
+At a minimum, the Entity class: 
+Must be annotated with @Entity
+Must have a public or protected no-argument constructor. The class can also have other constructors.
+
+• Java Annotations
+Step 1: Map class to database table
+@Entity					// here we are declaring our 'Student' java class as an Entity Class. 
+@Table(name="student")			// here we are mapping our java class to the database table 'student'. (name="tableName")
+public class Student{
+    ...
+}
+
+Step 2: Map fields to database columns
+@Entity
+@Table(name="student")
+public class Student{
+    @id
+    @Column(name="id")			// here we are mapping our 'id' field of java class to the 'id' column of the Database table.
+    private int id;
+
+    @Column(name="first_name")		// here we are mapping our 'firstName' field of java class to the 'first_name' column of the Database table.
+    private String firstName;
+}
+
+• @Column and @Table - Optional
+the use of @Column is optional.
+If you do not want to specify @Column then the column name must be same name as Java field.
+Same goes with the @Table too. 	
+
+• Terminology
+Primary Key: Uniquely identifies each row in a table. Must be a unique value. Cannot contain NULL values
+
+• MySQL - Auto Increment
+In the MySQL database, we can make use of an auto increment. We can define our primary key, and then we can specify that it's an auto increment.
+So In below code, we have a little snippet here, create table student.
+We have this column id which of type int, we delcare here that it will never be null, and then we specify auto increment.
+Behind the scenes, MySQL will keep track by automatically incrementing this id, and making sure it's a unique value.
+We also specify that our given column id is the primary key for this given table.
+MySQL Code:
+CREATE TABLE student (
+  id int NOT NULL AUTO_INCREMENT,			// here we are declaring that id cannot be null and we specify auto increment on it.
+  first_name varchar(45) DEFAULT NULL,
+  last_name varchar(45) DEFAULT NULL,
+  email varchar(45) DEFAULT NULL,
+  PRIMARY KEY (id)					// here we are declaring our 'id' column as the primary key of this table.
+}
+
+• JPA Identity - Primary Key
+Once we specify auto increment into our database table, we also need to declare it into our Java Code with @Id annotation
+@Entity
+@Table(name="student")
+public class Student{
+    @Id							// here we are declaring our 'id' field as the Unique Identifier of this Entity Class
+    @GeneratedValue(strategy=GenerationType.IDENTITY)	// here what we are saying is that this id value will be generated by the database and managed by the database. 
+							// There's no need for our code to manually try and keep track of that given id.
+    @Column(name="id")					// here we are mapping our 'id' field of java class to the 'id' column of the Database table.
+    private int id;
+}
+
+• ID Generation Strategies
+Name				Description
+GenerationType.AUTO		Pick an appropriate strategy for the particular database
+GenerationType.IDENTITY		Assign primary keys using database identity column
+GenerationType.SEQUENCE		Assign primary keys using a database sequence
+GenerationType.TABLE		Assign primary keys using an underlying database table to ensure uniqueness
+
+• Custom generation strategy
+We can define your own CUSTOM generation strategy :-)
+Create implementation of org. hibernate.id.IdentifierGenerator
+Override the method: public Serializable generate(...)
+
+
+-- JPA Annotations - Coding
+• Example for how to create an Entity Class, Map that class to database table and map class's fields to database table's columns
+  Project: 01-cruddemo-student-create
+
+
+-- Saving a Java Object with JPA - Overview
+• Sample App Features
+For this project, we will be doing CRUD operation on student object.
+Create a new Student
+Read a Student
+Update a Student
+Delete a Student
+
+
+• Student Data Access Object
+The Data Access object(DAO) is responsible for interacting with the database.
+cruddemo App	<--->	Student DAO	<--->	database
+
+Our DAO needs a JPA Entity Manager
+JPA Entity Manager is the main component for saving / retrieving entities
+Student DAO	Entity Manager	<--->	data source	<--->	database
+
+• DAO Methods
+save(...)
+findById(...)
+findAll()
+findByLastName(...)
+update(...)
+delete(...)
+deleteAll()
+
+• JPA Entity Manager
+Now as far as the other supporting components, our JPA entity manager needs a data source.
+So the data source basically defines the database connection information and the JPA entity manager and the data source
+are automatically created by Spring Boot, based on information from our native pom file, and also information from our application properties
+such as the URL, user ID, and password. It'll actually connect to the database. And then we can auto wire or inject the JPA entity manager into our student DAO.	
+
+• @Transactional Annotation
+The @Transactional annotation in JPA (Java Persistence API) is used to define the transactional boundaries for a method or a class. 
+When this annotation is applied to a method, it indicates that a transaction will be initiated before the method is executed and 
+committed or rolled back after the method completes. When applied to a class, it applies to all the public methods of the class. 
+This annotation is used to manage transactions in JPA and ensures that the database is kept in a consistent state in case of any 
+errors during the execution of the method.
+
+• @Repository Annotation
+This annotation is a sub-annotation of @Component annotation.
+So this annotation is applied to DAO implementations and Spring will automatically register the DAO implementation, thanks to component scanning.
+And then Spring will provide translation of any JDBC related exceptions.
+So here when we say translation, meaning that if we have any checked JDBC exceptions and then Spring will translate these two unchecked
+exceptions basically it makes the coding a bit easier here for interfacing with a given database.
+
+• Student DAO:		Student DAO	Entity Manager	<--->	data source	<--->	database
+Steps:
+1. Define DAO interface
+import com.practice.cruddemo.entity.Student;
+public interface StudentDAO {				// Creating an Interface by the name 'StudentDAO'. 
+    void save(Student theStudent);			// defining a method 'save' which takes an object of type 'Student' as an argument.
+}
+
+2. Define DAO implementation. Than Inject the entity manager
+import com.practice.cruddemo.entity.Student;
+import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
+
+@Repository
+public class StudentDAOImpl implements StudentDAO {	// creating a class 'StudentDAOImpl' which implements 'StudentDAO' interface to use the method 'save'.
+    private EntityManager entityManager;		// creating a field 'entityManager' of type 'EntityManager' which will be assigned an instance of type 'EntityManager' through constructor 
+
+    @Autowired
+    public StudentDAOImpl(EntityManager theEntityManager) {	// here we have created a constructor which take an object(instance) of type 'EntityManager' as an argument
+        entityManager = theEntityManager;		// here we are saving the coming new instance to the field 'entityManager'
+    }
+    
+    @Override
+    @Transactional					// when a method does create, update or delete within the database through a method, That method should have this annotation
+    public void save(Student theStudent){		
+	entityManager.persist(theStudent);    		// here we are overriding the 'save' method with saving the new Student object into our database table.
+    }
+}
+ 
+3. Update main app
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+
+@SpringBootApplication
+public class CruddemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CruddemoApplication.class, args);
+    }
+
+    @Bean
+    public CommandLineRunner commandlineRunner(StudentDAO studentDAO) { // here we are injecting an object 'studentDAO' of type 'StudentDAO' to use this interface's methods
+        return runner -> {
+            createStudent(studentDAO);		// here we are sending the same object to the method 'createStudent' as an argument. 
+        };
+    }
+	
+    private void createStudent(StudentDAO studentDAO){
+       // create the student object
+       System.out.println("Creating new student object...");
+       Student newStudent = new Student("aum", "soni", "aumsoni2002@gmail.com");
+
+       // save the student object
+       System.out.println("Saving student object...");
+       studentDAO.save(newStudent);
+
+       // display id of the saved student
+       System.out.println("The student is saved. The generated ID is: " + newStudent.getId()); 
+    }
+}
+
+
+-- Saving a Java Object with JPA - Coding - Part 1
+-- Saving a Java Object with JPA - Coding - Part 2
+• Example for how to create a new student object into our MySQL Database table
+  Project: 01-cruddemo-student-create
+
+
+-- Changing Index of MySQL Auto Increment
+• Changing the start index value of 'id' to 3000 in our database table
+Workbench: SQL File
+ALTER TABLE student_tracker.student AUTO_INCREMENT=3000;
+
+• Reset the AUTO_INCREMENT value to 1
+Workbench: SQL File
+TRUNCATE student_tracker.student		// The 'TRUNCATE' will remove all data from the database table and reset AUTO_INCREMENT to start with 1.
 
 
 
+-- Reading Objects with JPA - Overview
+• Read/Retrieve
+// retrieve/read from database using the primary key
+// in this example, retrieve Student with primary key: 1
+Student myStudent = entityManager.find(Student.class, 1);
+
+• Development Process
+1. Add new method to DAO interface
+import com.practice.cruddemo.entity.Student;
+public interface StudentDAO {
+    ...
+    Student findById(Integer id);	// defining a method 'findById' which takes 'id' of type 'Integer' as an argument and returns an object of type student
+}
+
+2. Add new method to DAO implementation
+@Repository
+public class StudentDAOImpl implements StudentDAO {
+    private EntityManager entityManager;
+
+    // inject entity manager using constructor injection
+    @Autowired
+    public StudentDAOImpl(EntityManager theEntityManager) {    
+        entityManager = theEntityManager;        
+    }
+
+    @Override
+    @Transactional                    
+    public void save(Student theStudent) {
+        entityManager.persist(theStudent);  
+    }
+ 
+    @override
+    public Student findById(Integer id){		// here we are creating a method 'findById' that will take 'id' of type Integer as an argument.
+    	return entityManager.find(Student.class, id);	// here we will send the above 'id' and the 'Student' class as argument to find the data which has the same id. 
+    }
+}
+
+3. Update main app
+public class CruddemoApplication {
+
+    ...
+
+    private void readStudent(StudentDAO studentDAO) {
+        // create the student object
+        System.out.println("Creating new student object...");
+        Student secondStudent = new Student("shivang", "soni", "shivangsoni1998@gmail.com");
+
+        // save the student object
+        System.out.println("Saving student object...");
+        studentDAO.save(secondStudent);
+
+        // display id of the saved student
+        System.out.println("The student is saved. The generated ID is: " + secondStudent.getId());
+
+        // Now that a new student will get created with above steps lets retrieve that student and print it in terminal
+
+        // Retrieve student based on its id
+        System.out.println("Retrieving student with id: " + secondStudent.getId());
+
+        // here we are calling the 'findById' method of 'StudentDAO' interface which will find the student object from database table and return it
+        Student readSecondStudent = studentDAO.findById(secondStudent.getId());
+
+        // Printing the returned student Object
+        System.out.println("Found the student: " + readSecondStudent);
+    }
+}
+
+
+-- Reading Objects with JPA - Coding
+• Example for how to read a single student from the MySQL database table
+  Project: 02-cruddemo-student-read
+
+
+-- Querying Objects with JPA - Overview
+• JPA Query Language(JPQL)
+JPA has the JPA query language or JPQL. It's a query language for retrieving objects. It's similar in concept to SQL,
+where you can select from a given table and grab some data accordingly.
+You can also make use of constraints/selectors like 'where', 'like'. You can order the data, join, so and so forth.
+However, the difference here is that JPQL is based on the entity name and entity fields as opposed to the direct 
+table names and table columns. So when you use JPQL, by default, you make use of the entity name and entity fields.
+
+• Retrieving all Students
+In below code, the 'Student' in 'FROM Student' is our Entity Class which we created into our entity package. It is not the name of our database table
+We have to use the Entity name here because all JPQL syntax is based on entity name and entity fields
+TypedQuery<Student> theQuery = entityManager.createQuery("FROM Student", Student.class);
+List<Student> students = theQuery.getResultList(); 
+
+• Retrieving Students where lastName='aum'
+As all JPQL syntax is based on entity name and entity fields, In below code we made use of 'lastName' entity field
+TypedQuery<Student> theQuery = entityManager.createQuery("FROM Student WHERE lastName='soni'", Student.class);
+List<Student> students = theQuery.getResultList();
+
+• Retrieving Students using 'OR'
+TypedQuery<Student> theQuery = entityManager.createQuery("FROM Student WHERE lastName='soni' OR firstName='aum'", Student.class);
+List<Student> students = theQuery.getResultList();
+
+• Retrieving Students using 'LIKE'
+// Match email address that ends with '@gmail.com'
+TypedQuery<Student> theQuery = entityManager.createQuery("FROM Student WHERE email LIKE '%@gmail.com'", Student.class);
+List<Student> students = theQuery.getResultList();
+
+• JPQL Named Parameters
+public List<Student> findByLastName(String theLastName) { // here we are creating a method 'firdByLastName' which takes 'theLastName' of type String as an argument
+    // Now in below code, we are just getting a student with its lastName but we are using ':theData' which gets swap with the comming 'lastName'.  
+     TypedQuery<Student> theQuery = entityManager.createQuery("FROM Student WHERE lastName=:theData", Student.class); 
+    theQuery.setParameter("theData", theLastName) ; // The swapping part is done here with this syntax.
+    return theQuery.getResultList();	// here we are just returing the list.
+}
+
+• Development Process
+1. Add new method to DAO interface
+public interface StudentDAO {               
+    ...
+    List<Student> findAll();	// here we are creating method 'findAll' which will return list of students
+}
+
+2. Add new method to DAO implementation
+@Repository
+public class StudentDAOImpl implements StudentDAO {
+    private EntityManager entityManager;
+
+    // inject entity manager using constructor injection
+    @Autowired
+    public StudentDAOImpl(EntityManager theEntityManager) {    
+        entityManager = theEntityManager;        
+    }
+
+    @Override
+    @Transactional                    
+    public void save(Student theStudent) {
+        entityManager.persist(theStudent);  
+    }
+ 
+    @Override
+    public Student findById(Integer id){		
+    	return entityManager.find(Student.class, id);
+    }
+
+    @Override
+    public List<Student>findAll(){
+	TypedQuery<Student> theQuery = entityManager.createQuery("FROM Student", Student.class); // retrieving all student objects from the database table
+        return theQuery.getResultList(); 							 // returning the list of all student objects
+    }
+}
+
+3. Update main app
+@SpringBootApplication
+public class CruddemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CruddemoApplication.class, args);
+    }
+
+    @Bean
+    public CommandLineRunner commandlineRunner(StudentDAO studentDAO) { // here we are injecting an object 'studentDAO' of type 'StudentDAO' to use this interface's methods
+        return runner -> {
+            queryAllStudents(studentDAO);
+        };
+    }
+
+    private void queryAllStudents(StudentDAO studentDAO) {
+        // here we are calling 'findAll' method of 'StudentDAO' interface which will find the all student objects from database table and return it
+        List<Student> allStudents = studentDAO.findAll();
+
+        // Printing all student objects through enhanced for loop
+        for (Student eachStudent : allStudents) {
+            System.out.println(eachStudent);
+        }
+    }
+}
+
+
+-- Querying Objects with JPA - Coding - Part 1
+• Example for how to query all student objects
+Project: 03-cruddemo-student-query-findAll
+
+
+-- Querying Objects with JPA - Coding - Part 2
+• Example for how to query a student by its last name
+Project: 03-cruddemo-student-query-findByLastName
+
+
+-- Updating Objects with JPA - Overview
+• Update a Student
+Student theStudent = entityManager.find(Student.class, 1);	// first we find the student object through its 'id'
+myStudent.setFirstName( "amit" ); 				// Second, we change first name to "amit"
+entityManager.merge(theStudent); 				// Lastly, we update the student object's first_name which has id=1 in our database table.
+
+• Update the last name for all students
+In below code, we are updating all student object's last name to 'Tester'. The total number of updated rows will be saved in 'numOfRowsUpdated'
+int numOfRowsUpdated = entityManager.createQuery (“UPDATE Student SET lastName='Tester'”).executeUpdate();
+
+• Development Process
+1. Add new method to DAO interface
+public interface StudentDAO {               
+    ...
+    void update(Student theStudent)	// here we are creating method 'update' which will take an object 'theStudent' of type 'Student'.
+}
+
+2. Add new method to DAO implementation
+@Repository
+public class StudentDAOImpl implements StudentDAO {
+    private EntityManager entityManager;
+
+    // inject entity manager using constructor injection
+    @Autowired
+    public StudentDAOImpl(EntityManager theEntityManager) {    
+        entityManager = theEntityManager;        
+    }
+
+    @Override
+    @Transactional				// when a method does create, update or delete within the database through a method, That method should have this annotation
+    public void update(Student theStudent){
+	entityManager.merge(theStudent);
+    }
+}
+
+3. Update main app
+@SpringBootApplication
+public class CruddemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CruddemoApplication.class, args);
+    }
+
+    @Bean
+    public CommandLineRunner commandlineRunner(StudentDAO studentDAO) { // here we are injecting an object 'studentDAO' of type 'StudentDAO' to use this interface's methods
+        return runner -> {
+            updateStudent(studentDAO);
+        };
+    }
+
+    private void updateStudent(StudentDAO studentDAO) {
+        int studentId = 1;
+	System.out.println("Getting student with id: " + studentId);
+	Student toBeUpdatedStudent = studentDAO.findById(studentId);	// finding a student object with id equals to 1.
+        System.out.println("Getting student with id: " + studentId);
+
+        System.out.println("Updating student...");
+        myStudent.setFirstName("amit");					// change first name to "amit"
+        studentDAO.update(toBeUpdatedStudent);				// updating new changes into our database.
+       
+        System.out.println("Updated student: + toBeUpdatedStudent);	// display updated student
+    }
+}
 
 
 
+-- Deleting Objects with JPA - Overview
+• Delete a Student
+int id = 1;
+Student theStudent = entityManager.find(Student.class, id);	// first we find the student object through its 'id'
+entityManager.remove (theStudent);				// Lastly, we remove that student object from our database table.
+
+• Delete based on a condition
+// here we are deleting all those student objects which have 'soni' as their last name. And it will save total number of deleted rows in 'numRowsDeleted'
+int numRowsDeleted = entityManager.createQuery("DELETE FROM Student WHERE lastName='soni'").executeUpdate();
+
+• Delete All Students
+int numRowsDeleted = entityManager.createQuery("DELETE FROM Student").executeUpdate();
+
+• Development Process
+1. Add new method to DAO interface
+public interface StudentDAO {               
+    ...
+    void delete(Integer id)	// here we are creating method 'delete' which will take 'id' of type 'Integer' as an argument.
+}
+
+2. Add new method to DAO implementation
+@Repository
+public class StudentDAOImpl implements StudentDAO {
+    private EntityManager entityManager;
+
+    // inject entity manager using constructor injection
+    @Autowired
+    public StudentDAOImpl(EntityManager theEntityManager) {    
+        entityManager = theEntityManager;        
+    }
+
+    @Override
+    @Transactional				// when a method does create, update or delete within the database through a method, That method should have this annotation
+    public void delete(Integer id){
+	Student theStudent = entityManager.find(Student.class, id);
+	entityManager.remove(theStudent);
+    }
+}
+
+3. Update main app
+@SpringBootApplication
+public class CruddemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CruddemoApplication.class, args);
+    }
+
+    @Bean
+    public CommandLineRunner commandlineRunner(StudentDAO studentDAO) { // here we are injecting an object 'studentDAO' of type 'StudentDAO' to use this interface's methods
+        return runner -> {
+            deleteStudent(studentDAO);
+        };
+    }
+
+    private void deleteStudent(StudentDAO studentDAO) {
+        int studentId = 1;
+	System.out.println("deleting student with id: " + studentId);
+	studentDAO.delete(studentId);   
+    }
+}
 
 
+-- Create Database Tables from Java Code - Overview
+• Create database tables: student
+JPA / Hibernate provides an option to auto-magically create database tables. It creates tables based on Java code with JPA/ Hibernate annotations
+and it is useful for development and testing.
+We have our Java code with the annotations, we run it through this Hibernate tool, and then it'll actually generate the SQL
+and also execute that SQL. Then it applies that on the given database. So there's no need for us to write any of the SQL.
+Java code	-->	JPA/Hibernate	-->	SQL	-->	Database
+
+• Configuration
+In the Hibernate configuration file, we will set up a property as shown below and we give a property value.
+Here we'll call it create. So when we run our application, Hibernate will drop the tables and then create them again from scratch.
+And this is all based on the JPA/Hibernate annotations that are in our Java code.
+In Spring Boot configuration file: application.properties
+spring.jpa.hibernate.ddl-auto=create
+
+• Creating Table based on Java Code
+In our 'Student' class, we have put '@Table' with table name to let Spring Boot know that this class is what going to be mapped with the database table 'student'.
+We also have put '@Columns' for all fields that we consider them as column in database table.
+Now If the 'student' table in our database does not exist, what JPA/Hibernate tool will do is, it will create a sql query based on annotations we used and execute that
+query to create a table with same table name and columns with same field names in the database. 
+
+• Configuration - application.properties
+spring.jpa.hibernate.ddl-auto=PROPERTY-VALUE
+Property Value 		Property Description
+none 			No action will be performed
+create-only 		Database tables are only created
+drop 			Database tables are dropped
+create 			Database tables are dropped followed by database tables creation
+create-drop 		Database tables are dropped followed by database tables creation. On application shutdown, drop the database tables
+validate 		Validate the database tables schema
+update 			Update the database tables schema
+
+• Use Case of using: spring.jpa.hibernate.ddl-auto=create
+Automatic table generation is useful for
+ Database integration testing with in-memory databases
+ Basic, small hobby projects 
 
 
-
-
-
-
-
+-- Create Database Tables from Java Code - Coding - Part 1
+-- Create Database Tables from Java Code - Coding - Part 2
+• Example for how to create database table by only making use of Java Code and zero use of sql queries
+Project: 08-cruddemo-create-db-tables-automatically
 
 
 
