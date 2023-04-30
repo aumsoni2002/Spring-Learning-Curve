@@ -1798,11 +1798,442 @@ Automatic table generation is useful for
 Project: 08-cruddemo-create-db-tables-automatically
 
 
+------------------------------------------------------------------------------------------- Section 4 ---------------------------------------------------------------------------------------
+-- What are REST Services - Part 1
+
+• Business Problem
+Build a client app that provides the weather report for a city
+Need to get weather data from an external service
+
+• Application Architecture
+
+My Weather App		---- Pass city name as string ----->		Weather Service(external)
+app that we are								Provided by External Third
+creating(CLIENT)        <--- Send back Weather Report ------		Party (SERVER)
 
 
+• Requirements
+How will we connect to the Weather Service?
+ We can make REST API calls over HTTP
+ REST: REpresentational State Transfer
+ Lightweight approach for communicating between applications
+
+What programming language do we use?
+ REST is language independent
+ The client application can use ANY programming language
+ The server application can use ANY programming language
+
+What is the data format?
+ REST applications can use any data format
+ Commonly see XML and JSON
+ JSON is most popular and modern
+ JSON Stands for JavaScript Object Notation 
+
+Possible Solution
+ Use online Weather Service API provided by: openweathermap.org
+ Provide weather data via an API
+ Data is available in multiple formats: JSON, XML etc ...
 
 
+Call Weather Service
+ The API documentation gives us the following:
+ Pass in the city name
+ api.openweathermap.org/data/2.5/weather?q={city name}
+ OR
+ api.openweathermap.org/data/2.5/weather?q={city name},{country code}
+
+Response - Weather Report
+ The Weather Service responds with JSON
+{
+   ...
+   "temp": 14,
+   "temp_min": 11,
+   "temp_max": 17,
+   "humidity": 81,
+   "name": "London"
+   ...
+}
 
 
+-- What are REST Services - Part 2
+
+• Example: Customer Relationship Manager(CRM) App
+CRM	----- Get Customers ----->	CRM Service		(In this Project, we will create this CRM Service which will pass back customer data as json.)
+App	<---- Customer List ------	(spring-rest)
 
 
+-- JSON Basics
+• What is JSON?
+JavaScript Object Notation is just a plain text data
+Lightweight data format for storing and exchanging data ... plain text
+Language independent, not just for JavaScript 
+Can use with any programming language: Java, C#, Python etc ...
+ 
+• Simple JSON Example
+Curley braces define objects in JSON
+Object members are name:value pairs and they are delimited by colons
+Name is always in double-quotes
+In below example, the name is id, firstName, lastName and active.
+		  the value is 14, Mario, Rossi and true
+{
+   "id": 14,
+   “firstName": "Mario",
+   “lastName": "Rossi",
+   "active": true
+}
+
+
+-- Spring Boot REST HTTP Basics
+
+• REST over HTTP
+Most common use of REST is over HTTP
+Leverage HTTP methods for CRUD operations
+
+HTTP Method 		CRUD Operation
+POST 			Create a new entity
+GET 			Read a list of entities or single entity
+PUT 			Update an existing entity
+DELETE 			Delete an existing entity
+
+• HTTP Messages
+My CRM App	--- HTTP Request Message --->		CRM REST Service
+(Client)        <-- HTTP Response Message ---		(Server)
+
+• HTTP Request Message
+The HTTP Request Message contain mainly 3 things:
+Request line: the HTTP command
+Header variables: request metadata
+Message body: contents of message
+
+• HTTP Response Message
+Response line: server protocol and status code
+Header variables: response metadata
+Message body: contents of message
+
+• HTTP Response - Status Codes
+Code Range 		Description
+100 - 199 		Informational
+200 - 299 		Successful
+300 - 399 		Redirection 
+400 - 499 		Client error
+500 - 599		Server error
+
+• MIME Content Types
+The message format is described by MIME content type stands for Multipurpose Internet Mail-Extension
+Basic Syntax: type/sub-type
+Examples
+ text/html, text/plain
+ application/json, application/xml, ...
+
+• Client Tool
+We need a client tool to send HTTP requests to the REST Web Service / API
+Plenty of tools available: curl, Postman, etc ...
+
+
+-- Spring Boot REST Controller - Overview - Part 1
+
+• Spring REST Hello World
+REST		--- /test/hello --->		Rest		(we will write code to create this Rest Service)	
+Client          <--- Hello World ---		Service
+
+• Spring REST Controller
+@RestController				// here this adds REST Support
+@RequestMapping("/test")
+public class DemoRestController {
+ @GetMapping ("/hello")			// Access the REST endpoint at /test/hello
+ public String sayHello() {
+  return "Hello World!";		// Returns content to client 
+ }
+}
+
+
+-- Spring Boot REST Controller - Overview - Part 2
+• Development Process
+1. Add Maven dependency for Spring Boot Starter Web
+File: pom.xml
+<!-- Add Spring Boot Starter Web -->
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+2.Create Spring REST Service using @RestController
+@RestController				// here this adds REST Support
+@RequestMapping("/test")
+public class DemoRestController {
+ @GetMapping ("/hello")			// Handles HTTP GET requests so we can access the REST endpoint at /test/hello 
+ public String sayHello() {
+  return "Hello World!";		// Returns content to client 
+ }
+}
+
+
+-- JSON Jackson Data Binding
+• what is Java JSON Data Binding
+Data binding is the process of converting JSON data to a Java POJO.
+
+JSON   <---->   Java POJO
+Here we are starting over on the left with JSON data and then we have our Java POJO. And so we can use data binding to convert from JSON
+over to a Java POJO. So it will read the contents of that JSON string or file and then populate the Java object with that given data.
+Or you can go the other way. You can start with the Java POJO and then send it down to an actual JSON string or JSON file.
+Now this whole process is called data binding.
+
+• Java JSON Data Binding using Jackson
+Spring uses the Jackson Project behind the scenes
+Jackson handles data binding between JSON and Java POJO
+Spring Boot Starter Web automatically includes dependency for Jackson.
+
+• Jackson Data Binding
+By default, Jackson will call the appropriate getter/setter methods when it handles the conversions.
+So if you're converting from JSON to POJO it will call up given setter methods.
+When you go from POJO to JSON it will call the getter methods.
+Here on the left hand side, I have this JSON object for id, first name, last name, and active. And then over on the right hand side,
+i have this Java POJO for a student. And so what will happen here is that we will actually do the conversion
+between JSON going to a Java POJO or starting with a Java POJO, like a student object, and then actually sending it down to a JSON string.
+So Jackson can help us with all of this processing. And again, the important thing here is that it will actually use the getter and setter methods
+for handling some of this processing.
+{
+  "id": 14,
+  “firstName": "Mario",		------>		Java POJO
+  "lastName": "Rossi",		<------		Student
+  "active": true
+}
+
+• JSON to Java POJO
+Convert JSON to Java POJO, Jackson will call setter methods on POJO.
+Converting JSON to Java POJO. Jackson is gonna call the setter methods on the POJO.
+So starting over here on the left hand side with this JSON object then we have this POJO, again, plain old JAVA class student.
+We have some fields defined and we have the getter/setter methods.
+So the important thing here, again, is that Jackson's gonna call the setter methods on the POJO.
+So for ID, they're gonna call set ID. All right, and so, Jackson will actually do this work for you.
+For first name it's gonna call set first name. For last name it's gonna call set last name.
+And for active it's gonna call set active. So you see the pattern in here, right?
+They basically use the name from the actual JSON. They call set. They take the first character of that name, make it cap,
+and then use that to make the actual method call.
+Now, again, I really wanna emphasize here. Jackson calls the setter methods. So it doesn't access any
+of the internal private fields directly on the POJO. It'll only call the given setter methods.
+So you have to make sure that you have those setter methods defined,
+and in this case, making sure that they match up accordingly for this given example
+{
+  "id": 14,
+  “firstName": "Mario",		Call setter methods		Java POJO
+  "lastName": "Rossi",		------------------>		Student
+  "active": true		Jackson will do this work
+}
+
+• Java POJO to JSON
+Convert Java POJO to JSON, Jackson will call getter methods on POJO.
+{
+  "id": 14,
+  “firstName": "Mario",		Call getter methods		Java POJO
+  "lastName": "Rossi",		<------------------		Student
+  "active": true		Jackson will do this work
+}
+
+• Spring and Jackson Support
+When building Spring REST applications:
+Spring will automatically handle Jackson Integration
+JSON data being passed to REST controller is converted to POJO
+Java object being returned from REST controller is converted to JSON
+All these Happens automatically behind the scenes.
+
+
+-- Spring Boot REST POJO - Overview
+• Create a new Service
+Returns a list of students
+GET Method: /api/students  -- by entering this URL, it will make a GET request which will return a list of students.
+
+
+• Spring REST Service
+REST		--- /api/students 			       -->	REST 
+Client		<--- returns a list of students in JSON format --- 	Service (we will write the code for service)
+
+Our REST Service will return List<Student>
+So we need to convert List<Student> to JSON
+Jackson can help us out with this ...
+
+• Behind the scenes
+REST		--- /api/students 			       -->	Spring REST + Jackson		--->		REST 
+Client		<--- returns a list of students in JSON format ---	Jackson will convert 		<--- 		Service (we will write the code for service)
+								        List<Student> to JSON				returns List<Student>
+
+-- Development Process
+1. Create Java POJO class for Student
+File: Student.java
+public class Student{
+   private String firstName;
+   private String lastName;
+
+   public Student(String firstName, String lastName){
+      this.firstName = firstName;
+      this.lastName = lastName;
+   }
+  
+   public String getFirstName() {
+      return firstName;
+   }
+
+   public void setFirstName (String firstName) {
+      this.firstName = firstName;
+   }
+
+   public String getLastName() {
+      return lastName;
+   }
+
+   public void setLastName (String lastName) {
+      this.lastName= lastName;
+   } 
+}
+
+2.Create Spring REST Service using @RestController
+File: StudentRestController.java 
+@RestController
+@RequestMapping ("/api")
+public class Student RestController {
+   // define endpoint for "/students" return list of students
+   @GetMapping ("/students")
+   public List<Student> getStudents() {
+      List<Student> theStudents = new ArrayList<>();		// here we are creating a new ArrayList of type 'Student'. 
+
+      theStudents.add(new Student ("Poornima", "Patel"));	// here we are adding new members/elements/students in the above created ArrayList.(Hard Coded) 
+      theStudents.add(new Student ("Mario", "Rossi"));
+      theStudents.add(new Student ("Mary", "Smith"));
+
+      return theStudents;					// here Jackson will convert List<Student> to JSON Format String and then return it. 
+   }
+}
+
+
+-- Spring Boot REST POJO - Coding - Part 1
+-- Spring Boot REST POJO - Coding - Part 2
+Example: how to use Jackson for data binding between REST Client and REST Services
+Project: 02-spring-boot-rest-crud-students-list-base
+
+
+-- Spring Boot REST Path Variables - Overview
+• Path Variables
+Retrieve a single student by id.
+GET Method: /api/students/{studentId}	-- by entering this URL, it will make a GET request which will return a single student which has studen id written in URL.
+	    /api/students/0		-- Now this last digit is the studend id and it is known as path variable.
+            /api/students/1
+            /api/students/2...		so on
+
+• Spring REST Service
+REST		--- /api/students/{studentId}     -->	REST
+Client  	<-- JSON Formatted single student ---	Service (we will write the code for service)
+
+• Behind the scenes
+REST		--- /api/students/{studentId} 		       -->	Spring REST + Jackson		--->		REST 
+Client		<--- returns a single student in JSON format   ---	Jackson will convert 		<--- 		Service (we will write the code for service)
+								        Student to JSON					returns a Student
+• Developement Process
+1. Add request mapping to Spring REST Service
+   Bind path variable to method parameter using @PathVariable
+File: StudentRestController.java
+@RestController
+@RequestMapping ("/api")
+public class StudentRestController {
+
+   // define endpoint for "/students/{studentId}" return student at index
+   @GetMapping ("/students/{studentId}")			// here it is neccessary to mention the path variable name in curly braces to let spring know that, it will vary.
+   public Student getStudent (@PathVariable int studentId) {	// Now this annotation is letting spring know that the name 'studentId' is going to be use as index value and must be same as above name
+      List<Student> theStudents = new ArrayList<> ();
+
+      // populate theStudents
+      theStudents.add(new Student ("Poornima", "Patel"));	// here we are adding new members/elements/students in the above created ArrayList.(Hard Coded) 
+      theStudents.add(new Student ("Mario", "Rossi"));
+      theStudents.add(new Student ("Mary", "Smith"));
+
+     return theStudents.get(studentId);
+   }
+}
+
+
+-- Spring Boot REST Exception Handling - Overview - Part 1
+-- Spring Boot REST Exception Handling - Overview - Part 2
+• Problem
+When a user enters an studentId which is out of the array length. Then the spring throws below error:
+status: 500
+error: Internal Server Error
+
+• Solution
+Now we can handle such problem with Spring Boot REST Exception handling through which we can return a JSON formatted customized String such as below:
+status: 404
+message: "Student with id 9999 is not found." 
+
+• Bigger Picture
+REST		--- /api/students/9999 -->	REST SERVICE + 
+Client          <-- exception error message --	Exception Handler
+
+
+-- Development Process
+1. Create a custom error response class
+   The custom error response class will be sent back to client as JSON
+   We will define the custom error response class as Java Class(POJO)	[Class name: StudentErrorResponse, it will have 3 private fields: status, message, timeStamp]
+   Jackson will handle converting it to JSON:	{"status": 404, "message": "Student with id 9999 is not found.", "timeStamp": 123456789}   
+File: StudentErrorResponse.java
+public class StudentErrorResponse {
+   private int status;
+   private String message;
+   private long timestamp;
+   // constructors
+
+   // getters / setters
+
+}
+
+2. Create a custom exception class
+   The custom student exception will used by our REST service
+   In our code, if we can't find student, then we'll throw an exception
+   Need to define a custom student exception class: StudentNotFoundException
+File: StudentNotFoundException
+public class StudentNotFoundException extends RuntimeException { // Here we are making use of inheritance, so that we can make use of fields and methods of RuntimeException class
+   public StudentNotFoundException(String message) {
+      super (message); // this will call the constructor of the super class which is the RuntimeException class and we are sending the 'message' as argument.			
+   }
+}
+
+3. Update REST service to throw exception if student not found
+File: StudentRestController.java
+@RestController
+@RequestMapping ("/api")
+public class StudentRestController {
+
+   // define endpoint for "/students/{studentId}" return student at index
+   @GetMapping ("/students/{studentId}")			// here it is neccessary to mention the path variable name in curly braces to let spring know that, it will vary.
+   public Student getStudent (@PathVariable int studentId) {	// Now this annotation is letting spring know that the name 'studentId' is going to be use as index value and must be same as above name
+      List<Student> theStudents = new ArrayList<> ();
+
+      // populate theStudents
+      theStudents.add(new Student ("Poornima", "Patel"));	// here we are adding new members/elements/students in the above created ArrayList.(Hard Coded) 
+      theStudents.add(new Student ("Mario", "Rossi"));
+      theStudents.add(new Student ("Mary", "Smith"));
+
+      // check the studentId against the length of array
+      if(studentId >= theStudents.size() || (studentId < 0)){
+         throw new StudentNotFoundException("Student with id " + studentId + "is not found.");
+      }
+     return theStudents.get(studentId);
+   }
+}
+
+4. Add an exception handler method using @ExceptionHandler
+   Define exception handler method(s) with @ExceptionHandler annotation
+   Exception handler will return a ResponseEntity
+   ResponseEntity is a wrapper for the HTTP response object
+   ResponseEntity provides fine-grained control to specify: HTTP status code, HTTP headers and Response body
+File: StudentRestController.java
+@RestController
+@RequestMapping("/api")
+public class StudentRestController {
+
+   @ExceptionHandler	// This annotation is used to let spring know that below method is used in Exception handling
+   public ResponseEntity<StudentErrorResponse> handleException (StudentNotFoundException exc) { // this exception handling method is of type 'StudentErrorResponse' 
+      StudentErrorResponse error = new StudentErrorResponse();
+      error.setStatus (HttpStatus.NOT_FOUND.value());
+      error.setMessage (exc.getMessage());
+      error.setTimeStamp (System.currentTimeMillis()); 
+      return new ResponseEntity<> (error, HttpStatus. NOT_FOUND);
+   } 
+}
