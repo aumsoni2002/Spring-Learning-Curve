@@ -2167,7 +2167,7 @@ REST		--- /api/students/9999 -->	REST SERVICE +
 Client          <-- exception error message --	Exception Handler
 
 
--- Development Process
+• Development Process
 1. Create a custom error response class
    The custom error response class will be sent back to client as JSON
    We will define the custom error response class as Java Class(POJO)	[Class name: StudentErrorResponse, it will have 3 private fields: status, message, timeStamp]
@@ -2237,3 +2237,369 @@ public class StudentRestController {
       return new ResponseEntity<> (error, HttpStatus. NOT_FOUND);
    } 
 }
+
+
+-- Spring Boot REST Global Exception Handling - Overview
+• Problems with having normal Exception Handler
+Exception handler code is only for the specific REST controller.
+It cannot be re-used by other controllers, if having multiple controllers in one project.
+
+• PROS of having Global Exception handlers
+It promotes reusablity.
+It centralizes exception handling. 
+
+• Spring @ControllerAdvice
+@controllerAdvice is similar to an interceptor / filter
+Pre-process requests to controllers
+Post-process responses to handle exceptions
+Perfect for global exception handling
+
+• Bigger Picture
+REST		--- /api/students/9999 	    -->		Controller Advice(pre-processing request)		----------------------->	REST SERVICE
+Client          <-- exception error message ---	        Global Exception handling(post-processing response)	<--- Throw Exception ---	
+
+• Development Process
+1. Create new @ControllerAdvice
+File: StudentRestExceptionHandler.java
+@ControllerAdvice
+public class StudentRestExceptionHandler{
+
+} 
+
+2.Refactor REST service ... remove exception handling code
+In this step, we are going to cut the code from 'StudentRestController.java' file and so that we can paste it into the controller advice.
+
+3. Add exception handling code to @ControllerAdvice
+File: StudentRestExceptionHandler.java
+@ControllerAdvice	// With the help of this annotation, it makes the below exception handling code available on a global basis, for a given application. 
+public class Student RestExceptionHandler {
+   @ExceptionHandler
+   public ResponseEntity<StudentErrorResponse> handleException (StudentNotFoundException exc) {
+      StudentErrorResponse error = new StudentErrorResponse();
+      error.setStatus (HttpStatus. NOT_FOUND.value());
+      error.setMessage (exc.getMessage());
+      error.setTimeStamp (System.currentTimeMillis());
+      return new ResponseEntity<>(error, HttpStatus. NOT_FOUND);
+   }
+}
+
+-- Spring Boot REST Global Exception Handling - Coding
+Example: How to write code for Global Exception Handling
+Project: 06-spring-boot-rest-crud-students-global-exception-handling
+
+
+-- Spring REST API Design
+• REST API Design
+Few things, we need to keep in mind before creating REST API in real-time projects:
+Who will use our API?
+How will they use our API?
+Now design the API based on such requirements.
+
+• API Design Process
+1. Review API requirements
+ Create a REST API for the Employee Directory
+ REST clients should be able to	full CRUD operations including all below
+  Get a list of employees
+  Get a single employee by id
+  Add a new employee
+  Update an employee
+  Delete an employee
+
+2. Identify main resource/entity
+To identify main resource/entity, look for the most prominent "noun"
+For our project, it is "employee"
+Convention is to use plural form of resource/entity: employees
+So the endpoint of this application can be: /api/employees
+
+3. Use HTTP methods to assign action on resource
+HTTP Method 		CRUD Action
+POST 			Create a new entity
+GET 			Read a list of entities or single entity
+PUT 			Update an existing entity
+DELETE 			Delete an existing entity
+
+• Employee Real-time Project
+HTTP Method 	Endpoint 			CRUD Action
+POST 		/api/employees 			Create a new employee
+GET 		/api/employees 			Read a list of employees
+GET 		/api/employees/{employeeId} 	Read a single employee
+PUT 		/api/employees 			Update an existing employee
+DELETE 		/api/employees/{employeeId} 	Delete an existing employee
+
+
+-- Spring Boot REST API Design - API Design of Real-Time Projects (PayPal, Github and SalesForce)
+• More API Examples
+  Paypal: Invoicing API: https://developer.paypal.com/api/rest/
+  POST 	 -- Create draft Invoice -- /v1/invoicing/invoices
+  PUT  	 -- Update Invoice	 -- /v1/invoicing/invoices/{invoice_id}
+  GET	 -- List Invoices	 -- /v1/invoicing/invoices
+  GET	 -- show Invoice details -- /v1/invoicing/invoices/{invoice_id}
+  DELETE -- Delete draft Invoice -- /v1/invoicing/invoices/{invoice_id}
+
+  GitHub: Repository API: https://docs.github.com/en/rest/repos?apiVersion=2022-11-28#repositories
+  POST   -- Create a new repository -- /user/repos
+  GET    -- List all repositories   -- /user/repos
+  GET    -- Get a repository        -- /repos/:owner/:repo
+  DELETE -- Delete a repository     -- /repos/:owner/:repo
+
+  SalesForce: Industries REST API: https://developer.salesforce.com/docs/atlas.en-us.api_rest_industries.meta/api_rest_industries/put.htm
+  POST	 -- Create an Individual     -- /services/apexrest/clinic01/vl/individual/
+  PUT    -- Update an Individual     -- /services/apexrest/clinic01/vl/individual/
+  GET    -- Retrieve all Individuals -- /services/apexrest/vl/individual/
+  GET    -- Retrieve one Individual  -- /services/apexrest/vl/individual/{individual_id}
+
+
+-- Spring Boot REST Project Overview
+• About what we will create in this Project
+REST API with Spring Boot that connects to a database
+
+• API requirements
+Create a REST API for the Employee Directory
+ REST clients should be able to	full CRUD operations including all below
+  Get a list of employees
+  Get a single employee by id
+  Add a new employee
+  Update an employee
+  Delete an employee
+
+• REST API
+HTTP Method 	Endpoint 			CRUD Action
+POST 		/api/employees 			Create a new employee
+GET 		/api/employees 			Read a list of employees
+GET 		/api/employees/{employeeId} 	Read a single employee
+PUT 		/api/employees 			Update an existing employee
+DELETE 		/api/employees/{employeeId} 	Delete an existing employee
+
+• Development Process
+1. Set up Database Dev Environment
+2. Create Spring Boot project using Spring Initializr
+3. Get list of employees
+4. Get single employee by ID
+5. Add a new employee
+6. Update an existing employee
+7. Delete an existing employee
+
+• Application Architecture
+Employee REST Controller   <---->   Employee Service   <---->   Employee DAO   <---->   Database 
+
+
+-- Spring Boot REST Setup Sample Data
+• employee.sql
+1. File: employee.sql, 
+2. Create a new database table: employee
+3. Load table with sample data
+
+Run the sql file on MySQL Workbench.
+Step 1: Set up Database Dev Environment -- Completed
+
+
+-- Spring Boot REST Create Project
+Go to: https://start.spring.io/
+ Project: Maven
+ Spring Boot: 3.0.6
+ Project Metadata: As per you
+ Packaging: Jar
+ Java: 17
+ Dependencies:
+  Spring Web [WEB]: Build web, including RESTful, applications using Spring MVC. Uses Apache Tomcat as the default embedded container.
+  Spring Data JPA [SQL]: Persist data in SQL stores with Java Persistence API using Spring Data and Hibernate.
+  Spring Boot DevTools [DEVELOPER TOOLS]: Provides fast application restarts, LiveReload, and configurations for enhanced development experience.
+  MySQL Driver [SQL]: MySQL JDBC driver.
+
+Generate it, run it on Intellij and we have created our project.
+Step 2: Create Spring Boot project using Spring Initializr -- Completed
+
+
+-- Spring Boot REST DAO
+• Application Architecture
+Employee REST Controller   <---->   Employee Service   <---->   Employee DAO   <---->   Database
+                                                              (Standard JPA API)
+• DAO Impl
+@Repository
+public class EmployeeDAOJpaImpl implements EmployeeDAO {	// The 'EmployeeDAO' must have same interface for consistent API
+   private EntityManager entityManager;				// Creating private field of type EntityManager
+
+   @Autowired
+   public EmployeeDAOJpaImpl (EntityManager theEntityManager) { // This is constructor injection and the 'theEntityManager' is created automatically by Spring Boot
+      entityManager = theEntityManager;				// saving it into our private field, so that we can do CRUD operations with it.
+   }
+
+   ...
+}
+
+• Get a List of Employees
+@Override
+public List<Employee> findAll() {
+   // create a query
+   TypedQuery<Employee> theQuery = entityManager.createQuery("from Employee", Employee.class);
+
+   // execute query and get result list
+   List<Employee> employees = theQuery.getResultList();
+
+   // return the results
+   return employees;
+}
+
+• Development Process
+1. Update db configs in application.properties
+2. Create Employee entity
+3. Create DAO interface
+4. Create DAO implementation
+5. Creat REST controller to use DAO
+
+
+-- Spring Boot REST DAO - Coding - Part 1
+-- Spring Boot REST DAO - Coding - Part 2
+-- Spring Boot REST DAO - Coding - Part 3
+Example: how to do below 5 stesp
+         1. Update db configs in application.properties
+         2. Create Employee entity
+         3. Create DAO interface
+         4. Create DAO implementation
+         5. Creat REST controller to use DAO
+Project: 20-spring-boot-rest-crud-employee-list-employees
+
+
+-- Spring Boot Define Service Layer - Overview
+• Refactor: Adding a Service Layer
+Employee Rest Controller  <---->  Employee Service  <---->  Employee DAO  <----> Database 
+
+• Purpose of Service Layer
+It is actually an implementation of the Service Facade design pattern.
+It is an intermediate layer for your custom business logic.
+And we can also use it to integrate data from multiple sources.
+
+• Integrate Multiple Data Sources
+					↱          <---->  Employee DAO   <---->  Database
+Employee Rest Controller  <---->  Employee Service <---->  Skills DAO     <---->  Database
+                                        ↳          <---->  Payroll DAO    <---->  Database
+Provide controller with a single view of the data that we integrated from multiple backend datasources
+
+• Specialized Annotation for Services
+Spring provides the @Service annotation
+@Service applied to Service implementations
+Spring will automatically register the Service implementation, thanks to component-scanning
+
+• Development Process
+1. Define Service Interface
+public interface EmployeeService {
+   List<Employee> findAll();
+}
+
+2. Define Service implementation: Inject the EmployeeDAO
+@Service
+public class EmployeeServicelmpl implements EmployeeService {
+   // inject EmployeeDAO ...
+   @Override
+   public List<Employee> findAll() {
+      return employeeDAO.findAll();
+   }
+}
+
+
+-- Spring Boot Define Service Layer - Coding
+Example: How to add an Employee Service Layer 
+Project: 21-spring-boot-rest-crud-employee-refactored-service-layer
+Step 3: Get list of employees -- completed
+
+-- Spring Boot DAO: Add, Update, Delete - Overview
+• Service Layer - Best Practice
+Best practice is to apply transactional boundaries at the service layer
+It is the service layer’s responsibility to manage transaction boundaries
+For implementation code
+ Apply @Transactional on service methods
+ Remove @Transactional on DAO methods if they already exist
+
+• DAO: Get a Single Employee
+@Override
+public Employee findById(int theId){
+   // get employee
+   Employee theEmployee = entityManager.find(Employee.class, theId);
+  
+   // return employee
+   return theEmployee;
+}
+
+• DAO: Add or Update employee
+@Override
+public Employee save(Employee theEmployee){
+   // save or update the employee
+   Employee dbEmployee = entityManager.merge(theEmployee);	// here if the id of 'theEmployee' is equal to 0, then it is saved as a new employee(add). If not then it has updated an existing one. 
+
+   // return the updated or saved employee
+   return dbEmployee;
+} 
+
+• DAO: Delete an existing employee
+@Override
+public void deleteById(int theId){
+   // find the employee by id
+   Employee theEmployee = entityManager.find(Employee.class, theId);
+  
+   // return employee
+   entityManager.remove(theEmployee);
+} 
+
+
+-- Spring Boot DAO: Add, Update, Delete - Coding
+Example: Adding Remaming CRUD Methods on DAO
+Project: 22-spring-boot-rest-crud-employee-dao-find-add-update-delete
+
+
+-- Spring Boot Service: Add, Update, Delete - Coding
+Example: Adding Remaming CRUD Methods on Service
+Project: 22-spring-boot-rest-crud-employee-service-find-add-update-delete
+
+-- Spring Boot REST: Get Single Employee - Overview
+• Read a Single Employee
+REST	---- GET /api/employees/{employeeId} ---->	Employee 	 
+Client  <---- employee information in JSON   -----	REST Controller
+
+• Sending JSON to Spring REST Controllers
+When sending JSON data to Spring REST Controllers
+For controller to process JSON data, need to set a HTTP request header
+Content-type: application/json
+Need to configure REST client to send the correct HTTP request header
+
+• Postman - Sending JSON in Request Body
+Must set HTTP Request Header in Postman
+Body: raw, JSON
+
+
+-- Spring Boot REST: Get Single Employee - Coding
+Example : Adding REST Controller method for getting a single employee
+Project: 24-spring-boot-rest-crud-employee-rest-controller-get-single-employee 
+
+
+-- Spring Boot REST: Add Employee - Coding 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
