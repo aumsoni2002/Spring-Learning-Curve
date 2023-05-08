@@ -2572,34 +2572,203 @@ Project: 24-spring-boot-rest-crud-employee-rest-controller-get-single-employee
 
 
 -- Spring Boot REST: Add Employee - Coding 
+Example : Adding REST Controller method for adding a single employee
+Project: 25-spring-boot-rest-crud-employee-rest-controller-add-employee 
 
 
+-- Spring Boot REST: Update Employee - Coding
+Example : Adding REST Controller method for updating a single employee
+Project: 26-spring-boot-rest-crud-employee-rest-controller-update-employee-and-delete-employee 
 
 
+-- Spring Boot REST: Delete Employee - Coding
+Example : Adding REST Controller method for deleting a single employee
+Project: 26-spring-boot-rest-crud-employee-rest-controller-update-employee-and-delete-employee 
 
 
+-- Spring Boot REST: Spring Data JPA - Overview
+• The Problem 
+We saw how to create a DAO for Employee: EmployeeDAO and EmployeeDAOJpaImpl
+What if we need to create a DAO for another entity? such as Customer, Student, Product, Book...
+Do we have to repeat all of the same code again???
+
+• Creating a DAO
+We may have noticed a pattern with creating DAOs.
+Mose of the code is the same.
+The only difference is the entity type and primary key type.
+
+• Spring Data JPA - Solution
+Spring Data JPA is the solution!!!
+Create a DAO and just plug in your entity type and primary key
+Spring will give you a CRUD implementation for FREE
+It helps to minimize boiler-plate DAO code.
+More than 70% reduction in code is possible, depending on use case
+
+• JpaRepository
+Spring Data JPA provides the interface: JpaRepository
+Exposes methods (some by inheritance from parents)
+Now we will be able to access methods such as: findAll(), findById(...), save(...), deleteById(...) and many others.
+Now using this interface, we only have to plugin the 'Entity' and 'Primary Key'.
+And they can be of any type, such as:
+Entity: Product,	Primary Key type: Integer
+Entity: Customer,	Primary Key type: Integer
+Entity: Student,	Primary Key type: Integer
+
+• Development Process
+1. Extend JpaRepository interface
+public interface EmployeeRepository extends JpaRepository<Employee, Integer> {	// here we are mentioning the Entity type as 'Employee' and Primary Key type as 'Integer' which is necessary
+  // that's it ... no need to write any code LOL! and still we will have access to methods like findAll(), findById(...), save(...), deleteById(...) and many others.
+}
+
+2. Use your Repository in your app (No need for an Implementation class)
+@Service
+public class EmployeeServiceImpl implements EmployeeService {
+   private EmployeeRepository employeeRepository;
+
+   @Autowired
+   public EmployeeServiceImpl (EmployeeRepository theEmployeeRepository) {
+      employeeRepository = theEmployeeRepository;
+   }
+
+   @Override
+   public List<Employee> findAll(){
+      return employeeRepository.findAll();
+   }
+}
+
+• Advacned Features
+Advanced features available for
+ Extending and adding custom queries with JPQL
+ Query Domain Specific Language (Query DSL)
+ Defining custom methods (low-level coding)
 
 
+-- Spring Boot REST: Spring Data JPA - Coding - Part 1
+-- Spring Boot REST: Spring Data JPA - Coding - Part 2
+Example: Using Spring Data JPA to Perform CRUD Operations.
+Project:30-spring-boot-rest-crud-employee-with-spring-data-jpa
 
 
+-- Spring Boot REST: Spring Data REST - Overview
+• The Problem
+We saw how to create a REST API for Employee: EmployeeRestController, EmployeeService and EmployeeServiceImpl
+What if we need to create REST API for another entity? such as: Customer, Student, Product, Book...
+Do we have to repeat all of the same code again???
+
+• Spring Data REST - Solution
+Spring Data REST is the solution!!!
+Leverages your existing JpaRepository
+Spring will give you a REST CRUD implementation for FREE .... like MAGIC
+It helps to minimize boiler-plate REST code!!!
+And no new coding required!!!
+
+• REST API
+Spring Data REST will expose these endpoints for free!
+HTTP Method 	Endpoint 			CRUD Action
+POST 		/api/employees 			Create a new employee
+GET 		/api/employees 			Read a list of employees
+GET 		/api/employees/{employeeId} 	Read a single employee
+PUT 		/api/employees 			Update an existing employee
+DELETE 		/api/employees/{employeeId} 	Delete an existing employee
+
+• Spring Data REST - How Does It Work?
+Spring Data REST will scan your project for JpaRepository
+Expose REST APIs for each entity type for your JpaRepository
+
+• REST Endpoints
+By default, Spring Data REST will create endpoints based on entity type
+It will provide simple pluralized form:
+ First character of Entity type is lowercase
+ Then just adds an 's' to the entity
+ So for Employee, it will be /employees
+
+• Development Process
+1. Add Spring Data REST to your Maven POM file
+<dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-data-rest</artifactId>
+</dependency>
+
+That is it, Absolutely NO CODING required!!
+Spring Data REST will scan our project for JpaRepository
+Spring Data REST will create endpoints based on entity type 
+Spring Data REST will expose these endpoints for free!
+
+• In a Nutshell
+For Spring Data REST, you only need 3 items
+1. Your entity: Employee
+2. JpaRepository: EmployeeRepository extends JpaRepository
+3. Maven POM dependency for: spring-boot-starter-data-rest
+
+• Application Architechture
+Spring Data REST	<---->		Employee Repository	<---->		Database
+/employees                              Spring Data JPA	
+
+• HATEOAS
+Spring Data REST endpoints are HATEOAS compliant
+HATEOAS: Hypermedia as the Engine of Application State
+Hypermedia-driven sites provide information to access REST interfaces
+Think of it as meta-data for REST data
+For a collection, meta-data includes page size, total elements, pages etc.
+HATEOAS uses Hypertext Application Language (HAL) data format
+
+• Advanced Features
+Spring Data REST advanced features
+ Pagination, sorting and searching
+ Extending and adding custom queries with JPQL
+ Query Domain Specific Language (Query DSL)
 
 
+-- Spring Boot REST: Spring Data REST - Coding - Part 1
+-- Spring Boot REST: Spring Data REST - Coding - Part 2
+Example: Using Spring Data REST to Perform CRUD Operations.
+Project:30-spring-boot-rest-crud-employee-with-spring-data-jpa
+
+• Spring Data REST Properties
+To change base path: spring.data.rest.base-path=/magic-api
 
 
+-- Spring Boot REST: Spring Data REST Configs and Sorting - Overview
+• The Problem 
+Spring Data REST does not handle complex pluralized forms such as: Goose-Geese, Person-People, Syllabus-Syllabi. In this case, you need to specify plural name.
+What if we want to expose a different resource name? Instead of /employees ... use /members
+
+• Solution
+Specify plural name/path with an annotation:
+@RepositoryRestResource(path="members")
+public interface EmployeeRepository extends JpaRepository<Employee, Integer> {	
+}   
+Now it will make use /members in the url: http://localhost:8080/members
+
+• Pagination
+By default, Spring Data REST will return the first 20 elements
+ Page size = 20
+You can navigate to the different pages of data using query param
+ http: //localhost: 8080/employees?page=0 (Pages are zero-based)
+ http: //localhost: 8080/employees?page=1 
+ ...
+
+• Spring Data REST Configuration
+File: applicaiton.properties
+Name 					Description
+spring.data.rest.base-path 		Base path used to expose repository resources
+spring.data.rest.default-page-size 	Default size of pages
+spring.data.rest.max-page-size 		Maximum size of pages
+
+• Sample Configuration
+File: applicaiton.properties
+spring.data.rest.base-path=/magic-api   // http://localhost:8080/magic-api/employees
+spring.data.rest.default-page-size=50	// it will return 50 elements per page
+
+• Sorting
+You can sort by the property names of your entity
+ In our Employee example, we have: firstName, lastName and email
+ Sort by last name (ascending is default): http://localhost:8080/employees?sort=lastName
+ Sort by first name, descending: http://localhost:8080/employees?sort=firstName, desc
+ Sort by last name, then first name, ascending: http://localhost:8080/employees?sort=lastName,firstName,asc 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+------------------------------------------------------------------------------------------- Section 5 ---------------------------------------------------------------------------------------
+-- Spring Boot REST API Security Overview
 
 
