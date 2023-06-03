@@ -1,0 +1,12 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">    <!-- To use Thymeleaf expressions -->
+<head>
+    <title>Thymeleaf Demo</title>
+    <link rel="stylesheet" th:href="@{/css/demo.css}"> <!-- Referencing CSS File here -->
+</head>
+<body>
+<!-- This is our Thymeleaf Expressions 'th:text...' -->
+<p th:text="'Time on the server is ' + ${theDate}" class="funny"/>   <!-- Adding class 'funny' here -->
+</body>
+
+</html>

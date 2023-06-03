@@ -3212,6 +3212,141 @@ Example: Executing Queries to create Custom Tables, Updating Spring Security Con
 Project: 06-spring-boot-rest-security-jdbc-bcrypt-custom-table-names
 
 
+------------------------------------------------------------------------------------------- Section 6 ---------------------------------------------------------------------------------------
+-- Spring Boot - Spring MVC with Thymeleaf - Overview
+• What is Thymeleaf? (www.thymeleaf.org)
+Thymeleaf is a Java templating engine
+Commonly used to generate the HTML views for web apps
+However, it is a general purpose templating engine
+we can use Thymeleaf outside of web apps
+It is a separate project unrelated to spring.io
+We can create Java Apps with Thymeleaf, There is no need for spring to do that.
+But there is a lot of synergy between the two projects.
+
+• What is a Thymeleaf template?
+It can be an HTML page with some Thymeleaf expressions
+It includes dynamic content from Thymeleaf expressions
+
+• Where is the Thymeleaf template processed?
+In a web app, Thymeleaf is processed on the server.
+Results included in HTML returned to browser.
+The web browser sends a request over to Spring MVC controller. The controller adds some data to the model,
+sends it over to the template, and then the template sends back HTML to the web browser.
+Web Browser ---1---> Spring MVC Controller ---2 [Model]---> Thymeleaf Template ---3---> Web Browser
+
+• Where to place Thymeleaf templat?
+In Spring Boot, your Thymeleaf template files go in: src/main/resources/templates
+For web apps, Thymeleaf templates have a .html extension
+
+• Additional Features 
+Looping and conditionals
+CSS and JavaScript integration
+Template layouts and fragments
+
+• Development Process
+1. Add Thymeleaf to Maven POM file
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+
+2. Develop Spring MVC Controller
+File: DemoController.java
+@Controller
+public class DemoController {
+  @GetMapping("/")
+  public String sayHello(Model theModel){
+    theModel.addAttribute("theDate", new java.util.Date());	// this attribute 'theDate' will be accessed by Thymeleaf HTML Template from this Spring MVC Model
+    return "helloworld"; // As we inject Thymeleaf dependency in Maven POM, Spring will auto-configure to use Thymeleaf and look for 'helloworld.html' file in src/main/resources/templates/
+  }
+}
+
+3. Create Thymeleaf template
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">	<!-- To use Thymeleaf expressions -->
+<head> ... </head>
+
+<body>
+    <p th:text="'Time on the server is ' + ${theDate}" />	<!-- This is our Thymeleaf Expressions 'th:text...' -->
+</body>
+
+</html>
+
+
+-- Spring Boot - Spring MVC with Thymeleaf - Coding - Part 1
+-- Spring Boot - Spring MVC with Thymeleaf - Coding - Part 2
+Example: Creating our first Web application with using Spring MVC Model and Thymeleaf
+Project: 01-thymeleafdemo-helloworld
+
+
+-- Spring Boot - Spring MVC with Thymeleaf and CSS - Overview
+• Using CSS with Thymeleaf Templates
+You have the option of using
+ Local CSS files as part of your project
+ Referencing remote CSS files
+
+• Other Search Directories
+Spring Boot will search following directories for static resources under: /src/main/resources
+/META-INF/resources
+/resources
+/static
+/public
+
+• 3rd Party CSS Libraries - Bootstrap
+Option 1: Local Installation
+          Download Bootstrap file(s) and add like shown: src/main/resources/static/css/bootstrap.min.css
+          So we can reference it in our template as shown: <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+Option 2: Remote Files
+          We can access the Bootstrap files remotely on the internet.
+          So we can reference it in our template with 'href' tag as shown: <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+
+• Development Process
+1. Create CSS file
+Spring Boot will look for all static resources in the: src/main/resources/static folder.
+We will create a file named 'demo.css' inside a sub-directory 'css' in the src/main/resources/static folder.
+We can create as many sub-directories as we want with any custom name inside 'static' folder. But it always should be inside 'static' folder.
+File: src/main/resources/static/css/demo.css
+.funny{
+  font-style: italic;
+  color: green;
+}
+
+2. Reference CSS in Thymeleaf template
+<head>
+    <title>Thymeleaf Demo</title>
+    <link rel="stylesheet" th:href="@{/css/demo.css}">	<!-- This is how we reference css in Thymeleaf template -->
+</head>
+
+3. Apply CSS style
+<body>
+<p th:text="'Time on the server is ' + ${theDate}" class="funny"/>    <!-- This is how we apply css class to our HTML tags -->
+</body>
+
+
+-- Spring Boot - Spring MVC with Thymeleaf and CSS - Coding
+Example: Adding CSS to our created ThymeleafDemoApplication
+Project: 02-thymeleafdemo-helloworld-css
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
