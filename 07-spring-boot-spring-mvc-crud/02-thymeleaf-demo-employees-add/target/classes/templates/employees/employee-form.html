@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+    <title>Save Employee</title>
+</head>
+
+<body>
+<div class="container">
+    <h3>Employee Directory</h3>
+
+    <hr>
+
+    <p class="h4 mb-4">Save Employee</p>
+    <form action="#" th:action="@{/employees/save}" th:object="${employee}" method="POST">
+        <!-- the 'employee' in the th:object is the same model that is mentioned in EmployeeController.java -->
+
+        <!--the 'firstName' in th:field is wired/referenced with the 'employee' of th:object-->
+        <input type="text" th:field="*{firstName}" placeholder="First Name" class="form-control mb-4 w-25">
+        <input type="text" th:field="*{lastName}" placeholder="Last Name" class="form-control mb-4 w-25">
+        <input type="text" th:field="*{email}" placeholder="Email" class="form-control mb-4 w-25">
+        <button type="submit" class="btn btn-info col-2">Submit</button>
+
+    </form>
+
+    <hr>
+    <a th:href="@{/employees/list}">Back to Employees List</a>
+</div>
+</body>
+</html>
+
+<!--
+When the form is first loaded, it will call the getter method such as employee.getFirstName(), employee.getLastName()...
+to populate the form fields initially.
+
+When the form is submitted, it will call the setter method such as employee.setFirstName(), employee.setLastName()...
+to populate Java Object with form data.
+-->
+
