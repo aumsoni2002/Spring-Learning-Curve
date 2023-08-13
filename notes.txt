@@ -2918,7 +2918,7 @@ public class DemoSecurityConfig {
 	UserDetails mary = User.builder()
 		.username("mary")
 		.password("{noop}test123")
-		.roles("EMPLOYEE" "MANAGER")
+		.roles("EMPLOYEE", "MANAGER")
 		.build();
 
 	UserDetails susan = User.builder()
@@ -3529,17 +3529,405 @@ public class EmployeeController {
     }
 }
 
+-- Spring Boot - Thymeleaf - CRUD Database Project - Delete Employee - Coding
+Example: delete an existing Employee through a 'Delete' button, a 'Confirm Click Function' and a 'delete' GetMapping 
+Project: 04-thymeleaf-demo-employees-delete
 
 ------------------------------------------------------------------------------------------- Section 8 ---------------------------------------------------------------------------------------
+-- Spring MVC Security - Overview
+• We will learn how to ...
+Secure Spring MVC Web Apps
+Develop login pages (default and custom)
+Define users and roles with simple authentication
+Protect URLs based on role
+Hide/show content based on role
+Store users, passwords and roles in DB (plain-text -> encrypted)
+
+• Practical Results
+Cover the most common Spring Security tasks that you will need on daily projects
+
+• Spring Security Model
+Spring Security defines a framework for security
+Implemented using Servlet filters in the background
+Two methods of securing an app: declarative and programmatic
+
+• Spring Security with Servlet Filters
+Servlet Filters are used to pre-process / post-process web requests
+Servlet Filters can route web requests based on security logic
+Spring provides a bulk of security functionality with servlet filters
+
+• Spring Security Overview
+We have a web browser on the left and then on the right we have this protected web resource like my top secret stuff.
+The browser's attempting to access our top secret information and get the results. Now, this is where Spring Security
+comes into play. These spring security filters will intercept those requests, pre-process them, and then see if the user
+can actually access that protected resource. Spring Security will look at our application security configuration
+and then it'll also look at the user's passwords and roles that are in our database to see if this user's authenticated
+and also if they're authorized to access this web resource. And this all happens in the background, thanks to Spring Security.
+
+Web      --> Spring Security  -->  Protected Web Resource [/mytopsecretstuff]	 
+Browser      Filters
+               |	<-->	my app security config	<-->  users passwords roles
+
+• Security Concept
+Authentication: Check user id and password with credentials stored in app / db
+Authorization: Check to see if user has an authorized role
+
+• Declarative Security
+Define application’s security constraints in configuration: All Java config: @Configuration
+It Provides separation of concerns between application code and security
+
+• Programmatic Security
+Spring Security provides an API for custom application coding
+Provides greater customization for specific app requirements
+
+• Enabling Spring Security
+1. Edit pom.xml and add spring-boot-starter-security
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+2. This will automagically secure all endpoints for application
+ 
+• Secured Endpoints
+Now when you access your application
+Spring Security will prompt for login
+
+• Different Login Methods
+1. HTTP Basic Authentication
+2. Default login form: Spring Security provides a default login form
+3. Custom login form: your own look-and-feel, HTML + CSS
+
+• Spring MVC Security - Project Demo
+Video: 176
 
 
+-- Spring MVC Security - Project Set Up - Part 1
+-- Spring MVC Security - Project Set Up - Part 2
+• Development Process
+1. Create project at Spring Initializr website: Add Maven dependencies for Spring MVC Web App, Security, Thymeleaf
+File: pom.xml
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+<dependency>
+<groupId>org.springframework.boot</groupid>
+<artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+
+<dependency>
+<groupId>org.thymeleaf.extras</groupId>
+<artifactId>thymeleaf-extras-springsecurity6</artifactId>
+</dependency>
 
 
+2. Develop our Spring controller
+File: DemoController.java
+@Controller
+public class DemoController {
+  @GetMapping("/")
+  public String showHome() {
+  return "home";		// src/main/resources/template/home.html
+  }
+}
+   
+3. Develop our Thymeleaf view page
+File: src/main/resources/template/home.html
+<html>
+<body>
+Welcome to the Home Page!
+</body>
+</html>
 
 
+-- Spring MVC Security - Dev Testing with Private/Incognito Windows
+• During Development and Testing
+When we run our application and login for the first time, we notice that whenever we make any changes into our code while the application is still running,
+the user stays logged in and changes we made get reflect on the page. This is not an ideal way, the page must let the user login again. The reason behind it
+is that the login is happening in a web browser session and the user will stay logged in if the same web browser session is going on.
+But this issue can only happen during developing and testing the application.
+Once we create the whole project and deploy it on a server, such thing will not happen.
+
+Solution:
+1. Start a new Web Browser Session: This is not an Ideal Solution as we always have to start a new Web Browser for it. 
+2. Quit the Browser(Not just close the window) and start again
+3. Start a new incognito window
 
 
+-- Spring MVC Security - Basic Configuration - Overview
+• Our Users
+User ID		Password	Roles
+john 		test123 	EMPLOYEE
+mary 		test123 	EMPLOYEE, MANAGER
+susan 		test123 	EMPLOYEE, MANAGER, ADMIN
 
+• Spring Security Password Storage
+In Spring Security, passwords are stored using a specific format: {id}encodedPassword
+ID	Description
+noop	Plain text passwords
+bcrypt	BCrypt password hasings
+
+• Password Example
+{noop}test123 -- the encoding algorithm id is 'noop'. As we have used noop, the password is going to be a plain text 'test123' 
+
+• Development Process
+1, Create Spring Security Configuration (@Configuration)
+File: DemoSecurityConfig.java
+@Configuration
+public class DemoSecurityConfig {
+  // add our security configurations here ..
+}
+
+2. Add users, passwords and roles
+File: DemoSecurityConfig.java
+import org.springframework.context.annotation.Configuration;
+@configuration
+public class DemoSecurityConfig {
+    @Bean
+    public InMemoryUserDetailsManager userDetailsManager() {
+        UserDetails john = User.builder()
+                .username("john")
+		.password("{noop}test123")
+		.roles("EMPLOYEE")
+		.build();
+
+	UserDetails mary = User.builder()
+		.username("mary")
+		.password("{noop}test123")
+		.roles("EMPLOYEE", "MANAGER")
+		.build();
+
+	UserDetails susan = User.builder()
+		.username("susan")
+		.password("{noop}test123")
+		.roles("EMPLOYEE", "MANAGER", "ADMIN")
+		.build();
+
+	return new InMemoryUserDetailsManager (john, mary, susan);
+     }
+}
+
+-- Spring MVC Security - Basic Configuration - Coding
+Example: Creating a Basic Configuration for 3 users having different roles.
+Project: 01-spring-boot-spring-security-default
+
+
+-- Spring MVC Security - Custom Login Form - Overview - Part 1
+-- Spring MVC Security - Custom Login Form - Overview - Part 2
+• Development Process
+1. Modify Spring Security Configuration to reference custom login form
+File: DemoSecurityConfig.java
+@Configuration
+public class DemoSecurityConfig {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(configurer ->
+                        configurer.
+                                anyRequest().authenticated()
+                )
+                .formLogin(form ->
+                        form
+                                .loginPage("/showMyLoginPage")
+                                .loginProcessingUrl("/authenticateTheUser")
+                                .permitAll()
+                );
+        return http.build();
+    }
+}
+
+2. Develop a Controller to show the custom login form
+File: LoginController.java
+@Controller
+public class LoginController {
+    @GetMapping("/showMyLoginPage") 	// this URL must match the DemoSecurityConfig's loginPage URL
+    public String showMyLoginPage() {
+        return "plain-login";		// src/main/resources/templates/plain-login.html
+    }
+}
+
+3. Create custom login form: HTML (CSS optional)
+• Spring Security defines default names for login form fields that means Spring Security Filters will read the form data and authenticate the user only if below names match
+User name field: username
+Password field: password
+
+File: // src/main/resources/templates/plain-login.html
+<form action="#" th:action="@{/authenticateTheUser}" method="POST"> <!-- the URL must match the DemoSecurityConfig's loginProcessingUrl URL and the method must be POST -->
+  <p>User name: <input type="text" name="username" /></p>
+  <p>Password: <input type="password" name="password" /></p>
+  <input type="submit" value="Login" />
+</form>  
+
+
+-- Spring MVC Security - Custom Login Form - Coding - Part 1
+-- Spring MVC Security - Custom Login Form - Coding - Part 2
+-- Spring MVC Security - Custom Login Form - Coding - Part 3
+Example: Creating our own Custom Login Form, Configuring to let spring use our custom login form and authenticate the user to enter the home page 
+Project: 04-thymeleaf-demo-employees-delete
+
+
+-- Spring MVC Security - Login Form Error Message - Overview
+• Failed Login
+When the user tries to login with bad credentials(username and passoword), the spring will keep the user on the same login page and 
+the spring will append '?error' to the current URL.
+
+• Development Process
+1. Modify custom login form by: 
+   check the error paramter in the current URL after user clicks submit button
+   if '?error' exists, show an error message
+File: src/main/resources/templates/plain-login.html
+<form action="#" th:action="@{/authenticateTheUser}" method="POST">
+  <div th:if="${param.error}"> <!-- this line means if there is an error parameter in our current URL than only show this whole line. -->
+    <i>Sorry! You entered invalid username/password.</i>
+  </div>
+  <p>User name: <input type="text" name="username" /></p>
+  <p>Password: <input type="password" name="password" /></p>
+  <input type="submit" value="Login" />
+</form>   
+
+
+-- Spring MVC Security - Login Form Error Message - Coding
+Example: Showing an error message to the user, if they try to login with bad credentials
+Project: 04-spring-boot-spring-mvc-security-custom-login-form-show-error-message
+
+
+-- Spring MVC Security - Custom Login Form with Bootstrap - Overview
+• Development Process
+1. Modify form to point to our login processing URL
+2. Verify form fields for username and password
+3. Change our controller to use our new Bootstrap login form
+
+
+-- Spring MVC Security - Custom Login Form with Bootstrap - Coding
+Example: Adding and showing a whole new custom login form styled with bootstrap
+Project: 05-spring-boot-spring-mvc-security-custom-login-form-with-bootstrap
+
+
+-- Spring MVC Security - Logout - Overview
+• Logout Process
+When a logout is processed, by default Spring Security will ...
+Invalidate user’s HTTP session and remove session cookies, etc
+Send user back to your login page
+Append a logout parameter: ?logout
+
+• Development Process
+1. Add logout support to Spring Security Configuration
+File: DemoSecurityConfig.java
+@Configuration
+public class DemoSecurityConfig {
+    ...
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(configurer ->
+                        configurer.
+                                anyRequest().authenticated()
+                )
+                .formLogin(form ->
+                        form
+                                .loginPage("/showMyLoginPage")
+                                .loginProcessingUrl("/authenticateTheUser")
+                                .permitAll()
+                )
+                .logout(logout -> logout.permitAll()	
+                );
+        return http.build();
+    }
+}
+
+2. Add logout button to home page
+We must make use of form tag with th:action="" to have a working logout button
+And we must use POST method as an attribute in the form tag
+File: src/main/resources/templates/home.html
+<form action="#" th:action="@{/logout}" method="POST">
+    <input type="submit" value="Logout" />  
+</form>
+
+3. Update login form to display “logged out” message
+<form action="#" th:action="@{/authenticateTheUser}" method="POST">
+  <div th:if="${param.logout}"> <!-- this line means if there is a logout parameter in our current URL than only show this whole line. -->
+    <i>You have been logged out!</i>
+  </div>
+  <p>User name: <input type="text" name="username" /></p>
+  <p>Password: <input type="password" name="password" /></p>
+  <input type="submit" value="Login" />
+</form>   
+
+
+-- Spring MVC Security - Logout - Coding
+Example: adding a working logout button and showing a logout message to the user, after they automatically redirect to login page
+Project: 06-spring-boot-spring-mvc-security-logout
+
+
+-- Spring MVC Security - Display User ID and Roles - Overview
+• Spring Security
+Spring Security provides support for accessing user id and roles
+
+• Development Process
+1. Display User ID
+File: home.html
+User: <span sec:authentication="principal.username"></span>
+
+2. Display User Roles
+Role(s): <span sec:authentication="principal.authorities"></span>
+
+
+-- Spring MVC Security - Display User ID and Roles - Coding
+Example: Displaying Username and Role(s) on the home page
+Project: 07-spring-boot-spring-mvc-security-display-user-name-and-roles
+
+ 
+-- Spring MVC Security - Restrict URLs Based on Roles - Overview
+• Our Example
+The user will login normally and as all users have a role as 'Employee', any user can be redirected to Home Page '/'. 
+Now if the user has a role of 'Manager', they only can access a new page Leadership Retreat Page '/leaders'.   
+If the user has a role of 'Admin', they only can access a new page 'Admin Holiday Cruise' '/systems'.
+
+• Syntax to restrict access based on roles
+requestMatchers(<<add path to match on>>).hasRole(<<only one authorized role>>) 			// this is the syntax to give authorization of a specific URL to only one role.
+requestMatchers(<<add path to match on>>).hasAnyRole(<<list of authorized role with comma-delimited>>) 	// this is the syntax to give authorization of a specific URL to multiple roles.
+
+• Development Process
+1. Create supporting controller code and view pages
+
+2. Restrict Access based on Roles
+File: DemoSecurityConfig.java
+File: DemoSecurityConfig.java
+@Configuration
+public class DemoSecurityConfig {
+    ...
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(configurer ->
+                        configurer
+				.requestMatchers("/").hasRole("EMPLOYEE") // this means that any user can have access to root '/' path as all of our users have 'EMPLOYEE' as their role.
+                                .requestMatchers("/leaders/**").hasRole("MANAGER") // this means that only user with role as 'MANAGER' can have access to '/leaders' and its sub-directories.
+                                .requestMatchers("/systems/**").hasRole("ADMIN")   // this means that only user with role as 'ADMIN' can have access to '/systems' and its sub-directories.
+                                .anyRequest().authenticated()
+                )
+                .formLogin(form ->
+                        form
+                                .loginPage("/showMyLoginPage")
+                                .loginProcessingUrl("/authenticateTheUser")
+                                .permitAll()
+                )
+                .logout(logout -> logout.permitAll()	
+                );
+        return http.build();
+    }
+}
+
+
+-- Spring MVC Security - Restrict URLs Based on Roles - Coding - Part 1
+-- Spring MVC Security - Restrict URLs Based on Roles - Coding - Part 2
+-- Spring MVC Security - Restrict URLs Based on Roles - Coding - Part 3
+-- Spring MVC Security - Restrict URLs Based on Roles - Coding - Part 4
+Example: Restricting access of URLS based on roles.
+Project: 08-spring-boot-spring-mvc-security-user-roles-restrict-access
 
 
 

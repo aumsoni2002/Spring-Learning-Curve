@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Custom Login Page</title>
+</head>
+<body>
+<h3>My Custom Login Page</h3>
+<form action="#" th:action="@{/authenticateTheUser}" method="POST">
+    <!-- the URL must match the DemoSecurityConfig's loginProcessingUrl URL and the method must be POST -->
+    <p>
+        User name: <input type="text" name="username"/>
+    </p>
+    <p>
+        Password: <input type="password" name="password"/>
+    </p>
+
+    <input type="submit" value="Login"/>
+</form>
+</body>
+</html>
+
+<!--
+XML Namespace is a unique identifier for XML elements, attributes etc ...
+In this case, we use the XML namespace for Thymeleaf (the "th": attributes)
+
+The XML Namespace does not connect to the Internet ...
+Just a unique identifier that is configured in the Thymeleaf JAR file
+-->
