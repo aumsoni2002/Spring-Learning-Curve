@@ -3893,9 +3893,9 @@ requestMatchers(<<add path to match on>>).hasAnyRole(<<list of authorized role w
 
 • Development Process
 1. Create supporting controller code and view pages
+See files: home.html, leaders.html and systems.html
 
 2. Restrict Access based on Roles
-File: DemoSecurityConfig.java
 File: DemoSecurityConfig.java
 @Configuration
 public class DemoSecurityConfig {
@@ -3930,12 +3930,263 @@ Example: Restricting access of URLS based on roles.
 Project: 08-spring-boot-spring-mvc-security-user-roles-restrict-access
 
 
+-- Spring MVC Security - Custom Access Denied Page - Overview
+We will create our own Custom Access Denied Page to show to those users who have restriced access to resources
+
+• Development Process
+1. Configure custom page for access denied
+File: DemoSecurityConfig.java
+@Configuration
+public class DemoSecurityConfig {
+    ...
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(configurer ->
+                        configurer
+				.requestMatchers("/").hasRole("EMPLOYEE") // this means that any user can have access to root '/' path as all of our users have 'EMPLOYEE' as their role.
+                                .requestMatchers("/leaders/**").hasRole("MANAGER") // this means that only user with role as 'MANAGER' can have access to '/leaders' and its sub-directories.
+                                .requestMatchers("/systems/**").hasRole("ADMIN")   // this means that only user with role as 'ADMIN' can have access to '/systems' and its sub-directories.
+                                .anyRequest().authenticated()
+                )
+		.exceptionHandling(configurer ->
+          		configurer
+                                .accessDeniedPage("/access-denied")
+                )
+                .formLogin(form ->
+                        form
+                                .loginPage("/showMyLoginPage")
+                                .loginProcessingUrl("/authenticateTheUser")
+                                .permitAll()
+                )
+                .logout(logout -> logout.permitAll()	
+                );
+        return http.build();
+    }
+}
+
+2. Create supporting controller code and view page
+See files access-denied.html
 
 
+-- Spring MVC Security - Custom Access Denied Page - Coding - Part 1
+-- Spring MVC Security - Custom Access Denied Page - Coding - Part 2
+Example: Creating a custom access denied page for those user have restricted access to resources.
+Project: 09-spring-boot-spring-mvc-security-custom-access-denied-page
 
 
+-- Spring MVC Security - Display Content Based on Roles - Overview
+Here we will write code for displaying content based on roles.
+
+• Development Process
+1. Add Spring Security Tag to the links
+File: home.html
+<div sec:authorize="hasRole('MANAGER')">	<!-- with the help of this tag, we will be able to show this link only to users with 'MANAGER' as their role -->
+  <p>
+      <a th:href="@{/leaders}">Leadership Meeting</a>
+      (Only for Manager Peeps)
+  </p>
+</div> 
+
+<div sec:authorize="hasRole('ADMIN')">		<!-- with the help of this tag, we will be able to show this link only to users with 'ADMIN' as their role -->
+  <p>
+      <a th:href="@{/systems}">IT Systems Meeting</a>
+      (Only for Admin Peeps)
+  </p>
+</div>
 
 
+-- Spring MVC Security - Display Content Based on Roles - Coding - Part 1
+-- Spring MVC Security - Display Content Based on Roles - Coding - Part 2
+Example: Writing code for displaying content based on roles
+Project: 10-spring-boot-spring-mvc-security-display-content-based-on-user-roles
+
+
+-- Spring MVC Security - JDBC Authentication - Plain Text - Overview
+here, we will make use of Spring Security with user accounts stored in the database.
+
+• Database Access
+So far, our user accounts were hard coded in Java source code
+Now we will be adding those user accounts into a database and will have that database access
+This is an advanced feature of the spring security
+
+• Database Support in Spring Security
+Spring Security can read user information from the database.
+By default, we have to follow Spring Security's predefined table schemas.
+But the nice thing about it is that by following their schemas, Spring Security includes
+all of the JDBC Code to actually read information from the database.
+there's very little Java code we have to write, as far as JDBC Code for reading information from the database.
+All we have to do is simply set up the configuration, create the appropriate tables,
+and Spring Security will do all the heavy lifting for us in the background.
+
+• Customize Database Access with Spring Security
+We can also customize the table schemas
+It is useful if we have custom tables specific to our project/custom
+We will be responsible for developing the code to access the data which is to write in JDBC, JPA/Hibernate etc...
+
+• Developement Process
+1. Develop SQL Script to set up database tables
+CREATE TABLE `users` (
+  `username` varchar(50) NOT NULL,
+  `password` varchar(50) NOT NULL,
+  `enabled` tinyint NOT NULL,
+
+  PRIMARY KEY (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+INSERT INTO `users`
+VALUES
+('john', '{noop}test123', 1),
+('mary', '{noop}test123', 1),
+('susan', '{noop}test123', 1); 
+
+CREATE TABLE `authorities` (
+  `username` varchar(50) NOT NULL,
+  `authority` varchar(50) NOT NULL,
+  
+  UNIQUE KEY `authorities_idx_1` (`username`, `authority`),
+  
+  CONSTRAINT `authorities_ibfk_1`
+  FOREIGN KEY (`username`) 
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+INSERT INTO `authorities`
+VALUES
+('john', 'ROLE_EMPLOYEE'),
+('mary', 'ROLE_EMPLOYEE'),
+('mary', 'ROLE_MANAGER'),
+('susan', 'ROLE_EMPLOYEE'),
+('susan', 'ROLE_MANAGER'),
+('susan', 'ROLE_ADMIN');
+  
+2. Add database support to Maven РОМ file
+File: pom.xml
+<!-- MYSQL JDBC Driver-->
+<dependency>
+  <groupId>com.mysql</groupId>
+  <artifactId>mysql-connector-j</artifactId> 
+  <scope>runtime</scope>
+</dependency>
+
+<!-- Spring Boot Data JPA for database access-->
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+
+
+3.Create JDBC properties file
+File: application.properties
+# JDBC connection properties
+spring.datasource.url=jdbc:mysql://localhost:3306/employee_directory
+spring.datasource.username=springstudent
+spring.datasource.password=springstudent
+
+4. Update Spring Security Configuration to use JDBC
+File: DemoSecurityConfig.java
+@Configuration
+public class DemoSecurityConfig {
+    // In below code we are telling spring security to use JDBC authentication, 
+    // so with just below lines of code, spring security has auto-magically using the user accounts from the database 	
+    @Bean 
+    public UserDetailsManager userDetailsManager (DataSource dataSource) {  // here we have injected data source which is auto configured by Spring Boot  
+        return new JdbcUserDetailsManager (dataSource); // here exactly we are telling spring security to use JDBC authentication with our data source
+    }
+...
+}
+
+
+-- Spring MVC Security - JDBC Authentication - Plain Text - Coding - Part 1
+-- Spring MVC Security - JDBC Authentication - Plain Text - Coding - Part 2
+-- Spring MVC Security - JDBC Authentication - Plain Text - Coding - Part 3
+-- Spring MVC Security - JDBC Authentication - Plain Text - Coding - Part 4
+Example: setting up database table, adding database support to pom.xml file, adding jdbc connection properties into application.properties file 
+         and updating DemoSecurityConfig to use JDBC
+Project: 11-spring-boot-spring-mvc-security-jdbc-plain-text
+
+
+-- Spring MVC Security - JDBC Authentication - BCrypt Encryption - Overview Part 1
+-- Spring MVC Security - JDBC Authentication - BCrypt Encryption - Overview Part 2
+• Password Storage - Best Practice
+The best practice is store passwords in an encrypted format
+
+• Spring Security Team Recommendation
+Spring Security recommends using the popular bcrypt algorithm
+bcrypt
+ Performs one-way encrypted hashing
+ Adds a random salt to the password for additional protection
+ Includes support to defeat brute force attacks
+
+• How to Get a Bcrypt password
+We have a plain text password and we can encrypt it by using below two methods
+option 1: Use a website utility to perform the encryption
+option 2: Write a Java code to perform the encryption
+
+• Spring Security Login Process
+1. Retrieve password from db for the user
+2. Read the encoding algorithm id (bcrypt etc)
+3. For case of bcrypt, encrypt plaintext password which has been entered by user in login form with the help of using same salt that is used to bcrypt the password in db.  
+4. Compare that password that we encrypted with the encrypted password from db (notice here in this process the password from db is never decrypted as bcrypt is one-way encryption algorithm)
+5. If there is a match, login successful
+6. If no match, login NOT successful
+
+• Development Process
+1. Run SQL Script that contains encrypted passwords
+   Modify DDL for password field, length should be 68
+CREATE TABLE `users` (
+  `username` varchar(50) NOT NULL,
+  `password` char(68) NOT NULL,
+  `enabled` tinyint NOT NULL,
+  PRIMARY KEY (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+INSERT INTO `users` 
+VALUES 
+('john','{bcrypt}$2a$10$qeS0HEh7urweMojsnwNAR.vcXJeXR1UcMRZ2WcGQl9YeuspUdgF.q',1),
+('mary','{bcrypt}$2a$10$qeS0HEh7urweMojsnwNAR.vcXJeXR1UcMRZ2WcGQl9YeuspUdgF.q',1),
+('susan','{bcrypt}$2a$10$qeS0HEh7urweMojsnwNAR.vcXJeXR1UcMRZ2WcGQl9YeuspUdgF.q',1);
+
+
+-- Spring MVC Security - JDBC Authentication - BCrypt Encryption - Coding  
+Example: Making use of Bcrypt algorithm to encrypt user passwords in the database.
+Project: 12-spring-boot-spring-mvc-security-jdbc-bcrypt
+
+
+-- Spring MVC Security - JDBC Authentication - Custom Tables - Overview
+To make use of custom tables with custom table names and column names, we need to tell spring about how it can find users from the database.
+We can do that by providing spring with queries for how to find user by username and how to find roles by username
+
+• For Security Schema Customization
+Tell Spring how to query your custom tables
+Provide query to find user by user name
+Provide query to find authorities/roles by user name
+
+•  Development Process                                  
+1. Create our custom tables with SQL
+2. Update Spring Security Configuration
+    Provide query to find user by user name
+    Provide query to find authorities/roles by user name
+@Configuration
+public class DemoSecurityConfig {
+    @Bean
+    public UserDetailsManager userDetailsManager (DataSource dataSource) {
+        JdbcUserDetailsManager theUserDetailsManager = new JdbcUserDetailsManager (dataSource);
+        
+        theUserDetailsManager // the '?' in the query is a parameter placeholder where the parameter value will be the username entered by user into the login form
+           .setUsersByUsernameQuery ("select user_id, pw, active from members where user_id=?"); 
+
+        theUserDetailsManager // the '?' in the query is a parameter placeholder where the parameter value will be the username entered by user into the login form
+           .setAuthoritiesByUsernameQuery("select user_id, role from roles where user_id=?");
+
+        return theUserDetailsManager;
+    }
+...
+}
+
+
+-- Spring MVC Security - JDBC Authentication - Custom Tables - Coding - Part 1
+-- Spring MVC Security - JDBC Authentication - Custom Tables - Coding - Part 2
+Example: Creating our our custom database table and updating DemoSecurityConfig file by providing find user by username and find roles by username queries for spring. 
+Project: 13-spring-boot-spring-mvc-security-jdbc-bcrypt-custom-tables
 
 
 

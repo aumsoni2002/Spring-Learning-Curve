@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+
+<h2>Home Page</h2>
+
+<hr>
+
+<p>Welcome to the Home Page!</p>
+
+<hr>
+
+<p>
+    User: <span sec:authentication="principal.username"></span>
+    <br><br>
+    Role(s): <span sec:authentication="principal.authorities"></span>
+</p>
+
+<!--<hr>-->
+
+<!--Below is a link which will redirect the users with role 'Managers' to /leaders and subdirectories-->
+<div sec:authorize="hasRole('MANAGER')"> <!-- with the help of this tag, we will be able to show this link only to users with 'MANAGER' as their role -->
+    <p>
+        <a th:href="@{/leaders}">Leadership Meeting</a>
+        (Only for Manager Peeps)
+    </p>
+</div>
+
+
+<!--Below is a link which will redirect the users with role 'Admin' to /systems and subdirectories-->
+<div sec:authorize="hasRole('ADMIN')"> <!-- with the help of this tag, we will be able to show this link only to users with 'ADMIN' as their role -->
+    <p>
+        <a th:href="@{/systems}">IT Systems Meeting</a>
+        (Only for Admin Peeps)
+    </p>
+</div>
+
+
+<hr>
+
+<form action="#" th:action="@{/logout}" method="POST">
+    <input type="submit" value="Logout"/>
+</form>
+
+</body>
+</html>
