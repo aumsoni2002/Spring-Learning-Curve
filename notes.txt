@@ -3328,6 +3328,130 @@ Example: Adding CSS to our created ThymeleafDemoApplication
 Project: 02-thymeleafdemo-helloworld-css
  
 
+-- Spring Boot - Spring MVC Validation - Overview
+here we will perform validation on a form input fields
+
+• The Need for Validation
+Check the user input form for required fields, valid numbers in a range, valid format (postal code), custom business rule ad so on.
+
+• Java's Standard Bean Validation API: http://www.beanvalidation.org
+Java has a standard Bean Validation API
+Defines a metadata model and API for entity validation
+Spring Boot and Thymeleaf also support the Bean Validation API
+
+• Validation Annotations
+Annotation		Description
+@NotNull		Checks that the annotated value is not null
+@Min			Must be a number >= value
+@Max                    Must be a number <= value
+@Size			Size must match the given size
+@Pattern                Must match a regular expression pattern
+@Future / @Past         Date must be in future or past of given date
+others...
+ 
+• Our Road Map: what we are going to do moving forward
+1. set up our development environment
+2. required field
+3. validate number range: min, max
+4. validate using regular expression (regexp)
+5. custom validation
+
+
+-- Spring Boot - Spring MVC Validation - Setup Dev Environment
+Video: 164
+
+
+-- Spring Boot - Spring MVC Validation - Required Fields - Overview
+• Require Fields
+here we will create a HTML page in which we will put two fields firstname nad lastname  in our form for users to fill. 
+We will make the lastname input field as required. So if the user is submitting the form without entering the lastname,
+we will show the user an error message saying 'Lastname is required'.
+
+• Pulling It All Together  
+There are going to be two fields firstname and lastname, and a submit button in our 'customer-form.html'. When the user clicks on submit button, we will send the 
+customer object which contains the user entered data to our customer controller. Now the customer controller performs validation and if the validation passes the user
+will be redirected to a new page or if the validation fails the user will be redirected back to the 'customer-form.html' page.
+
+customer-form.html  -- Customer Object -->  Customer Controller  -- Passes Validation --> New Page
+                 <-- Fails Validation --            |  
+
+• Thymeleaf Properties
+th:action="@{/processForm}" -- here we are telling spring to exactly where we want the form to be submitted.
+th:object="${customer}"     -- here we are telling spring to use 'customer' model attribute which we added in the CustomerController before returing the HTML Page.
+th:field="*{firstName}"     -- as we are using object 'customer' which contains an instance of the class 'Customer', now this class has two fields firstName and lastName which we can use. 
+th:field="*{lastName}"      -- as we are using object 'customer' which contains an instance of the class 'Customer', now this class has two fields firstName and lastName which we can use. 
+th:if="${#fields.hasErrors('lastName')} -- here we are saying that if the field 'lastName' has any errors than only show the error text. 
+th:errors="*{lastName}"     -- here we are saying that show the error message which we have put on the lastName field in the Customer class.  
+
+• Development Process
+1. Create Customer class and add validation rules
+File: Customer.java
+public class Customer {
+
+    private String firstName;
+
+    @NotNull(message = "is required")
+    @Size (min=1, message = "is required")
+    private String lastName;
+     
+    // getter/setter methods ...
+}
+
+2. Add Controller code to show HTML form
+File: CustomerController.java
+@Controller
+public class CustomerController {
+    @GetMapping("/")
+    public String showForm(Model theModel) { // the model allows us to share information between Controllers and View Pages(Thymeleaf) 
+        theModel.addAttribute("customer", new Customer()); // now we can access the 'customer' attribute into our HTML Page 
+        return "customer-form";
+    }
+}
+3. Develop HTML form and add validation support
+File: customer-form.html
+form th:action="@{/processForm}" th:object="${customer}" method="POST">
+    First Name: <input type="text" th:field="*{firstName}"/>
+    <br><br>
+    Last Name (*): <input type="text" th:field="*{lastName}"/>
+    <!--    Show error message if the field last name has any error-->
+    <!--    th:if="${#fields.hasErrors('lastName')}}" check if there are any error messages for last name-->
+    <!--    th:errors="*{lastName}" this will show the error message -->
+    <span th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="error"></span>
+    <br><br>
+    <input type="submit" value="Submit" />
+</form>
+
+4. Perform validation in the Controller class
+File: CustomerController.java
+@Controller
+public class CustomerController {
+    ...
+    @PostMapping("/processForm") // @Valid is for telling spring mvc to perform validations on the object 'customer'. the 'theBindingResult' will have the result of validation 
+    public String processForm(@Valid @ModelAttribute("customer") Customer theCustomer, BindingResult theBindingResult) {
+        if (theBindingResult.hasErrors()) { // here we are checking if theBindingResult has any errors
+          return "customer-form";
+        }     
+        else {
+	  return "customer-confirmation";
+        }
+    }
+}
+
+5. Create confirmation page
+File: customer-confirmation.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+The customer is confirmed: <span th:text="${customer.firstName + ' ' + customer.lastName}" />
+</body>
+</html>
+
+
+-- Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 1
+-- Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 2
+-- Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 3
+-- Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 4
+
 ------------------------------------------------------------------------------------------- Section 7 ---------------------------------------------------------------------------------------
 -- Spring Boot - Thymeleaf - CRUD Database Project - Overview
 • Application Requirements
