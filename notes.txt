@@ -3451,6 +3451,279 @@ The customer is confirmed: <span th:text="${customer.firstName + ' ' + customer.
 -- Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 2
 -- Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 3
 -- Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 4
+Example: Making input fields required with spring mvc validation 
+Project: 03-validationdemo-required-fields
+
+
+-- Spring Boot - Spring MVC Validation - @InitBinder - Overview
+• White Space
+Our previous example had a problem with white space.
+If we put white space(s) in the last name field, it gets passed, which it should not. 
+We need to trim whitespace from input fields
+
+• @InitBinder
+We will make use of this annotation called @InitBinder. This annotation works as a pre-processor.
+So for every web request that comes through our controller, this code will execute first.
+So we will actually create a method, and we'll annotate it with the @InitBinder annotation.
+So all requests coming in are pre-processed. Now, this is actually an advanced annotation.
+
+• Method for resolving white spaces issue
+We will use this method for writing code to trim Strings that is to remove leading and trailing white space.
+And If String only has white spaces then we will trim it to null.
+This will resolve our validation problem.	
+
+• Register Custom Editor in Controller
+File: CustomerController.java
+@InitBinder	// with this annotation, it will pre-process all web requests coming into our controller with below method.
+public void initBinder (WebDataBinder dataBinder) {
+  // StringTrimmerEditor is a predefined class in the Spring API which removes white spaces - leading and trailing 
+  StringTrimmerEditor stringTrimmerEditor = new StringTrimmerEditor(true); // true - if there are only white spaces then trim till the value gets null 
+  // here we are saying that for every string from data, bind this stringTrimmerEditor so that it removes the white spaces on every input field 
+  dataBinder.registerCustomEditor(String.class, stringTrimmerEditor); 
+}
+
+
+-- Spring Boot - Spring MVC Validation - @InitBinder - Coding
+Example: Adding a method with @InitBinder annotation which pre-process every String from data.
+Project: 04-validationdemo-init-binder-trim
+
+-- Spring MVC Validation - Validate a Number Range - Overview
+• Validate a Number Range
+Add a new input field on our form for: Free Passes
+Users can only enter a number between 0-10
+
+• Development Process
+1. Add validation rule to Customer class
+File: Customer.java
+public class Customer {
+  @Min(value=0, message="must be greater than or equal to zero")
+  @Max(value=10, message="must be less than or equal to 10")
+  private int freePasses;
+
+  // Getter/Setter methods  
+}
+
+2. Display error messages on HTML form
+File: customer-form.html
+...
+<br><br>
+Free Passes: <input type="text" th:field="*{freePasses}"/>
+<!--    Show error message if the field freePasses has any error-->
+<!--    th:if="${#fields.hasErrors('freePasses')}}" checks if there are any error messages for freePasses-->
+<!--    th:errors="*{freePasses}" this will show the error message -->
+<span th:if="${#fields.hasErrors('freePasses')}" th:errors="*{freePasses}" class="error"></span>
+<br><br>
+...
+
+3. Perform validation in the Controller class
+File: CustomerController.java
+No changes needed for processForm Method
+
+4. Update confirmation page
+File: customer-confirmation.html
+<br><br>
+Free Passes: <span th:text="${customer.freePasses}"/>
+ 
+
+-- Spring Boot - Spring MVC Validation - Validate a Number Range - Coding
+Example: Adding a new input field 'Free Passes' and putting a validation of type number range on it.
+Project: 05-validationdemo-number-ranges
+
+
+-- Spring Boot - Spring MVC Validation - Applying Regular Expressions - Overview
+• Regular Expressions
+A sequence of characters that define a search pattern
+This pattern is used to find or match strings
+
+• Validate a Postal Code
+Add a new input field on our form for: Postal Code
+User can only enter 5 chars digits
+Apply Regular Expression
+
+• Development Process
+1. Add validation rule to Customer class
+File: Customer.java
+public class Customer {
+  @Pattern(regexp="^[a-zA-Z0-9]{5}", message="only 5 chars/digits")
+  private String postalCode;
+
+  // Getter/Setter methods  
+}
+
+2. Display error messages on HTML form
+File: customer-form.html
+<br><br>
+Postal Code: <input type="text" th:field="*{postalCode}"/>
+<!--    Show error message if the field postalCode has any error-->
+<!--    th:if="${#fields.hasErrors('postalCode')}}" checks if there are any error messages for postalCode-->
+<!--    th:errors="*{postalCode}" this will show the error message -->
+<span th:if="${#fields.hasErrors('postalCode')}" th:errors="*{postalCode}" class="error"></span> 
+<br><br>
+
+3. Update confirmation page
+File: customer-confirmation.html
+<br><br>
+Postal Code: <span th:text="${customer.postalCode}"/>
+
+
+-- Spring Boot - Spring MVC Validation - Applying Regular Expressions - Coding
+Example: Applying Regex Pattern to input field 'postalCode'
+Project: 06-validationdemo-regular-expressions
+
+
+-- Spring Boot - Spring MVC Validation - Make Integer Fields Required
+Example: Making the freePasses integer field required.
+Project: 07-validationdemo-make-integer-fields-required
+
+• Changes
+File: Customer.java
+public class Customer {
+    @NotNull(message = "is required")
+    @Min(value = 0, message = "must be greater than or equal to zero")
+    @Max(value = 10, message = "must be less than or equal to 10")
+    // Integer is a special wrapper class in java, now that StringTrimmerEditor will also work on this field too.
+    // StringTrimmerEditor will remove all empty spaces and make it null
+    private Integer freePasses;
+
+    public Integer getFreePasses() {
+        return freePasses;
+    }
+
+    public void setFreePasses(Integer freePasses) {
+        this.freePasses = freePasses;
+    }
+}
+
+
+-- Spring Boot - Spring MVC Validation - Strings for Int Fields and Custom Messages
+Example: Adding a Validation and custom message on Integer Field which gets triggered on entering non-number characters. 
+Project: 08-validationdemo-handle-strings-for-integer-fields
+
+• Development Process
+1. Create custom error message under src/resources/messages.properties
+File: src/resources/messages.properties
+# This is a special file that Spring MVC make use of during performing validation. Exact file location is very important.
+typeMismatch.customer.freePasses=Invalid number
+
+# typeMismatch   -- this is the type of error which is 'Mismatch'
+# customer       -- this is our spring model attribute name
+# freePasses     -- this is our field name of the above 'customer' attribute
+# Invalid Number -- this is our custom message to show when user enters non number characters
+
+
+-- Spring Boot - Spring MVC Validation - Debugging Tips for Custom Error Names 
+To check how validation works, we can simply console log theBindingResult
+File: CustomerController.java
+public class CustomerController {
+    @PostMapping("/processForm")
+    // @Valid is for telling spring mvc to perform validations on those fields which have been set with constraints such as lastName.
+    // the 'theBindingResult' will have the result of validation, so that we can know if a field has any error or not.
+    public String processForm(@Valid @ModelAttribute("customer") Customer theCustomer, BindingResult theBindingResult) {
+
+        System.out.println("Last Name: |" + theCustomer.getLastName() + "|");
+        System.out.println("The Binding Results are: " + theBindingResult.toString());
+        if (theBindingResult.hasErrors()) { // here we are checking if theBindingResult has any errors
+            return "customer-form";
+        } else {
+            return "customer-confirmation";
+        }
+    }
+} 
+
+
+-- Spring Boot - Spring MVC Validation - Custom Validation - Overview - Part 1
+-- Spring Boot - Spring MVC Validation - Custom Validation - Overview - Part 2
+
+• Custom Validation
+Perform custom validation based on our business rules
+Our example: Course Code must start with "AUM"
+Spring MVC calls our custom validation
+Custom validation returns boolean value for pass/fail (true/false)
+
+• Create a custom Java Annotation from scratch
+For our custom validation, we will create a Custom Java Annotation: @CourseCode (the annotation name can be anything)
+@CourseCode(value="AUM", message="must start with AUM") // the value of courseCode must start with 'AUM'. And an error message will be shown if validation fails. 
+private String courseCode;
+
+• Development Process
+1. Create custom validation rule
+   a. Create @CourseCode annotation: to put this annotation, first we need to create it with below syntax
+   File: CourseCode.java
+   @Constraint(validatedBy = CourseCodeConstraintValidator.class) // here we have to give it a helper class that contains actual business/validation logic for validating this process
+   @Target( {ElementType.METHOD, ElementType.FIELD} ) // here we are saying that this annotation can be used on methods and fields
+   @Retention(RetentionPolicy.RUNTIME) // process it at runtime
+   public @interface CourseCode {
+     // define default value parameter's value
+     // the value() here is to declare that the annotation will have a parameter 'value'. 
+     // if the value parameter is not used while using putting this annotation, the default value will be 'AUM' 
+     public String value() default "AUM";
+
+     // define default error message
+     // the message() here is to declare that the annotation will have a parameter 'message'. 
+     // if the message parameter is not used while using putting this annotation, the default error message will be 'must start with AUM'
+     public String message() default "must start with AUM";  
+   }
+   
+   b. Create CourseCodeConstraintValidator (this is where we will write our own custom business logic for validation)
+   CourseCodeConstraintValidator.java
+   public class CourseCodeConstraintValidator implements ConstraintValidator<CourseCode, String> { // CourseCode is our annotation and String is the type of data that we are validating against
+     private String coursePrefix;
+     
+     @Override
+     public void initialize(CourseCode theCourseCode) {
+       coursePrefix = theCourseCode.value(); 	// here we are setting the actual default value so that we can use it to validate against the data that user enters 
+     }
+
+     @Override
+     public boolean isValid (String theCode, ConstraintValidatorContext theConstraintValidatorContext) { // here theCode is the data that is entered by user, ConstraintValidatorContext is just an helper class that is added for additional error messages
+       boolean result;
+       if(theCode != null) { // if theCode is not null, it will go in this if statement.
+           result = theCode.startsWith(coursePrefix); // here it checks that if theCode starts with the coursePrefix that is 'AUM', it will return true or it will return false.
+       }
+       else {
+          result = true; // if theCode is null, it will return false as the field Course Code is not required.	
+       }
+       return result; 
+     }
+   }
+
+2. Add validation rule to Customer class
+File: Customer.java
+public class Customer {
+    @CourseCode
+    private String courseCode;
+ 
+    public String getCourseCode() {
+        return courseCode;
+    }
+
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
+    }
+}
+3. Display error messages on HTML form
+File: customer-form.html
+<br><br>
+Course Code: <input type="text" th:field="*{courseCode}"/>
+<!--    Show error message if the field courseCode has any error-->
+<!--    th:if="${#fields.hasErrors('courseCode')}}" checks if there are any error messages for courseCode-->
+<!--    th:errors="*{courseCode}" this will show the error message -->
+<span th:if="${#fields.hasErrors('courseCode')}" th:errors="*{courseCode}" class="error"></span>
+<br><br>
+
+4. Update confirmation page
+File: customer-confirmation.html
+<br><br>
+Course Code: <span th:text="${customer.courseCode}"/>
+
+
+-- Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 1
+-- Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 2
+-- Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 3
+-- Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 4
+-- Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 5
+Example: Creating a custom validator and adding it to an input field
+Project: 09-validationdemo-custom-validation-rule
 
 ------------------------------------------------------------------------------------------- Section 7 ---------------------------------------------------------------------------------------
 -- Spring Boot - Thymeleaf - CRUD Database Project - Overview
@@ -4311,6 +4584,457 @@ public class DemoSecurityConfig {
 -- Spring MVC Security - JDBC Authentication - Custom Tables - Coding - Part 2
 Example: Creating our our custom database table and updating DemoSecurityConfig file by providing find user by username and find roles by username queries for spring. 
 Project: 13-spring-boot-spring-mvc-security-jdbc-bcrypt-custom-tables
+
+
+------------------------------------------------------------------------------------------- Section 9 ---------------------------------------------------------------------------------------
+-- JPA / Hibernate Advanced Mappings Overview - Part 1
+• Advanced Mappings
+In the database, we most likely will have multiple tables and we will also have relationships between tables.
+And we need to model this with Hibernate.
+In this section we will look at 3 types of advanced mappings:
+1. One-to-One
+2. One-to-Many, Many-to-One
+3. Many-to-Many
+
+• One-to-One
+taking an example here of an 'instructor' which can have an 'instructor_detail' entity.
+instructor	----> 	instructor_detail
+id               	id
+first_name       	youtube_channel
+last_name        	hobby  
+email
+instructor_detail
+
+• One-to-Many
+Now the same 'instructor' can have many 'course'
+but we are assuming here that one 'course' has only one 'instructor'. So that we can make it one to many.
+course	 ---->  instructor  <----  course
+                   |
+                course
+
+• Many-to-One
+for this type of mapping, we can just inverse the above scenario.
+So we can say that many 'course' can have one 'instructor'  
+
+• Many-to-Many
+A 'course' can have many 'student'
+A 'student' can have many 'course'
+
+
+-- JPA / Hibernate Advanced Mappings Overview - Part 2
+• Primary key and foreign key: Important Database Concepts
+Primary key is an identifier which identifies a unique row in a table.
+Foreign key links tables together. It is a field in one table that refers to primary key in another table.
+Foreign key's main purpose is to preserve the relationship between the tables.
+And we may hear this buzzword, "Referential Integrity." This helps prevent operations that would destroy
+the relationship between those tables. And also it ensures that only valid data is inserted into the foreign key column.
+So that foreign key column can only contain valid reference to a primary key in another table.
+If not, the database will actually throw some errors and it'll tell you about it.
+
+For Instance:
+instructor table: id = primary key, instructor_detail_id = foreign key
+id   first_name   last_name   instructor_detail_id
+1    aum          Soni        100   
+2    Shivang      Soni        200
+
+instructor_detail table: id = primary key
+id   youtube_channel   hobby
+100  URL1              football 
+200  URL2              cricket
+
+the 'instructor_detail_id' of 'instructor' table is the foreign key which is linked to 'id' of 'instructor_detail' table
+which is a primary key of that table.
+
+• Cascade: Important Database Concepts
+We can cascade operations. Cascading means applying the same operation to related entities automatically.
+For instance if we perform the 'save' operation on the 'instructor' entity, the same 'save' operation will be performed to 'instructor_detail' entity.
+Now if we delete an instructor, we should also delete their instructor_detail. This is also known as Cascade Delete
+This Cascade Delete depends on the use case. For instance we cannot use Cascase Delete in Many-to-Many mapping scenario
+
+• Fetch Types: Eager vs Lazy Loading: Important Database Concepts
+When should we fetch/retrieve data? Should we retrieve everything at a time?
+For instance, if i want to retrieve an instructor, should i retrieve all courses that are related to instructor at that time?
+For such cases we can two types of Fetch:
+1. Eager will retrieve everything
+2. Lazy will retrieve on request
+
+• Uni-Directional(one-way) Relationship  
+We start with the instructor object, we load the instructor, and then from there,
+we can access the instructor detail. So it's really a one way relationship. So that is why it is called uni-directional.
+
+• Bi-Directional (two-way) Relationship
+We also have the idea of bidirectional. So here we have the instructor which have its relationship with the instructor detail,
+So to access instructor detail, we need to go through instructor. But then we can also go the other way, that is we can actually 
+load the instructor detail and have a reference to the given instructor. So that is called as bidirectional.
+
+
+-- @OneToOne Mapping Overview - Part 1
+-- @OneToOne Mapping Overview - Part 2
+-- @OneToOne Mapping Overview - Part 3
+As we mentioned above, the 'instructor' can have an 'instructo detail' entity.
+Now this example here is going to be uni-directional. We start wil the 'instructor' and then we have one-way relationship with the 
+'instructor detail'.
+
+• Entity Lifecycle
+Operations	Description
+Detach		If entity is detached, it is not associated with a Hibernate session
+Merge		If instance is detached from session, then merge will reattach to session                   
+Persist         Transitions new instances to managed state. Next flush / commit will save in db.          
+Remove          Transitions managed entity to be removed. Next flush / commit will delete from db.
+Refresh         Reload/sync object with data from db. Prevents stale data         
+
+• @OneToOne - Cascade Types
+Cascade Type	Description
+PERSIST         If entity is persisted / saved, related entity will also be persisted            
+REMOVE 		If entity is removed/deleted, related entity will also be deleted
+REFRESH         If entity is refreshed, related entity will also be refreshed             
+DETACH 		If entity is detached (not associated w/ session), then related entity will also be detached
+MERGE   	If entity is merged, then related entity will also be merged                   
+ALL		All of above cascade types 
+               
+• Development Process: One-to-One
+1. Prep Work - Define database tables
+CREATE TABLE `instructor_detail` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `youtube_channel` varchar(128) DEFAULT NULL,
+  `hobby` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+CREATE TABLE `instructor` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(45) DEFAULT NULL,
+  `last_name` varchar(45) DEFAULT NULL,
+  `email` varchar(45) DEFAULT NULL,
+  `instructor_detail_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK_DETAIL_idx` (`instructor_detail_id`),
+  CONSTRAINT `FK_DETAIL` FOREIGN KEY (`instructor_detail_id`) REFERENCES `instructor_detail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION 
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+2. Create InstructorDetail class
+File: InstructorDetail.java
+@Entity
+@Table(name="instructor_detail")
+public class InstructorDetail {
+  @Id
+  @GeneratedValue(strategy=GenerationType.IDENTITY)
+  @Column(name="id")
+  private int id;
+ 
+  @Column(name="youtube_channel")
+  private String youtubeChannel;
+ 
+  @Column(name="hobby")
+  private String hobby;
+
+  // constructors
+
+  // getters/setters
+ 
+}
+3. Create Instructor class
+File: Instructor.java
+@Entity
+@Table(name="instructor")
+public class Instructor {
+  @Id
+  @GeneratedValue(strategy=GenerationType.IDENTITY)
+  @Column(name="id")
+  private int id;
+ 
+  @Column(name="first_name")
+  private String firstName;
+ 
+  @Column(name="last_name")
+  private String lastName;
+
+  @Column(name="email")
+  private String email;
+
+  // This is how we can map our Instructor class to InstructorDetail class
+  // here we are letting spring know that there is going to be one-to-one relationship between this class and some other class
+  // here we are saying that all operations that we apply to 'instructor' entity, should also be applied to 'instructor_detail' entity
+  // Configure Multiple Cascade Types: @OneToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST})
+  @OneToOne(cascade=CascadeType.ALL) // It is important to know that by default,  no operation is cascaded.     
+  @JoinColumn(name="instructor_detail_id") // here we are telling spring to use 'instructor_detail_id' column as foreign key and link it to the primary key of below mentioned class
+  private InstructorDetail instructorDetail; // it is mandatory to mention the class name as a type so that the Hibernate can automatically links both classes.
+
+  // constructors
+
+  // getters/setters
+ 
+}
+
+4. Create Main App
+We will create a Spring Boot-Command Line App
+This will allow us to focus on JPA / Hibernate
+Leverage our DAO pattern as in previous videos
+File: AppDAO.java
+public interface AppDAO {
+    void save (Instructor theInstructor);
+}
+
+File: AppDAOImpl.java
+@Repository
+public class AppDAOImpl implements AppDAO { 
+    // define field for entity manager
+    private EntityManager entityManager;
+     
+    // inject entity manager using constructor injection
+    @Autowired
+    public AppDAOImpl (EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    @Override
+    @Transactional
+    public void save (Instructor theInstructor) {
+        entityManager.persist (theInstructor);		// here we are saving the new instructor object and it will also save the instructor detail object.  
+    }
+}
+
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CruddemoApplication.class, args);
+    }
+
+    // This CommandLineRunner is from the spring boot application and below snippet of code will be
+    // executed after the Spring Beans have been loaded.
+    @Bean
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            createInstructor(appDAO);
+        };
+    }
+
+    private void createInstructor(AppDAO appDAO) {
+        // creating a new instructor
+        Instructor tempInstructor = new Instructor("Aum", "Soni", "aumsoni2002@gmail.com");
+
+        // creating a new instructor detail
+        InstructorDetail tempInstructorDetail = new InstructorDetail("URL1", "Playing football");
+
+        // setting the new instructor detail object to our tempInstructor object
+        tempInstructor.setInstructorDetail(tempInstructorDetail);
+
+        // saving the new instructor object into our database
+        // by saving the instructor, it will also save the instructor detail because of that CascadeType.ALL
+        System.out.println("Saving instructor: " + tempInstructor);
+        appDAO.save(tempInstructor);
+        System.out.println("Done!!");
+
+    }
+}
+
+-- @OneToOne Mapping - Database Setup
+Video 247: Run the 'create-db.sql' script in the workbench 
+
+
+-- @OneToOne Mapping - Set up Spring Boot Project - Part 1
+-- @OneToOne Mapping - Set up Spring Boot Project - Part 2
+Video 248, 249: editing the CruddemoApplication.java file by putting the CommandLineRunner.
+
+
+-- @OneToOneMapping - Coding - Create InstructorDetail entity
+Video 250: Creating InstructorDetail.java class under entity package and putting fileds/columns, constructors, getters, setters and toString() method in it
+
+
+-- @OneToOneMapping - Coding - Create Instructor entity
+Video 251: Creating Instructor.java class under entity package and putting fileds/columns, constructors, getters, setters and toString() method in it.
+
+
+-- @OneToOneMapping - Coding - Create the DAO
+Video 252: creating AppDAO.java interface and AppDAOImpl.java class under dao package and putting the code to save a new instrcutor in it.
+
+
+-- @OneToOneMapping - Coding - Develop the Main App
+Video 253: updating the CruddemoApplication.java file by creating 'createInstructor' method which instanciates a new instructor and instructor detail object and saves in the database.  
+
+
+-- @OneToOneMapping - Find Instructor by ID
+• Development Process
+1. Add method in DAO Interface
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    Instructor findInstructorById(int theId);
+}
+
+2. Define the method in DAO Implementation
+File: AppDAOImpl.java
+@Repository
+public class AppDAOImpl implements AppDAO {
+  ...
+  @Override
+  public Instructor findInstructorById(int theId) {
+     // now this will also return the associated entity. In our case it will return both instructor and instructor details because by default the fetch type is eager.
+     return entityManager.find(Instructor.class, theId); 
+  }
+}
+
+3. Update Main App by adding method for finding instructor by id 
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            findInstructorById(appDAO);
+        };
+    }
+    ...
+    private void findInstructorById(AppDAO appDAO) {
+        int theId = 1;
+        System.out.println("Finding Instructor with id: " + theId);
+        Instructor tempInstructor = appDAO.findInstructorById(theId);
+        System.out.println("tempInstructor: " + tempInstructor);
+        System.out.println("the associated instructor detail: " + tempInstructor.getInstructorDetail());
+    }
+}
+
+Example: Updating DAO Interface and DAO Implementtion to add code for finding instructor by id.
+Project: 02-jpa-one-to-one-uni-find-instructor
+
+
+-- @OneToOneMapping - Delete Instructor by ID
+• Development Process
+1. Add method in DAO Interface
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    void deleteInstructorById(int theId);
+}
+
+2. Define the method in DAO Implementation
+File: AppDAOImpl.java
+@Repository
+public class AppDAOImpl implements AppDAO {
+  ...
+  @Override
+  @Transactional
+  public void deleteInstructorById(int theId) {
+     // retrieve the instructor
+     Instructor tempInstructor = entityManager.find(Instructor.class, theId); 
+
+     // delete the instructor
+     entityManager.remove(tempInstructor); // this will also remove the instructor detail object because we have put CascadeType.ALL
+  }
+}
+
+3. Update Main App by adding method for delete instructor by id 
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            deleteInstructorById(appDAO);
+        };
+    }
+    ...
+    private void deleteInstructorById(AppDAO appDAO) {
+        int theId = 3;
+        System.out.println("Delete Instructor with id: " + theId);
+        appDAO.deleteInstructorById(theId);
+        System.out.println("Done!");
+    }
+}
+
+
+-- @OneToOneMapping - Bi-Directional - Overview
+Now a new scenario, we want to load an InstructorDetail first and then we want to load the associcated Instructor entity.
+Because we have uni-directional(one-way) relationship, we cannot perform above scenario.
+But this can be solved with B-directional(two-way) relationship.
+With this type of relationship, we can actually start by loading the InstructorDetail first and make it back to the Instructor.
+To use Bi-Directional, we can keep the existing database schema. No changes required to database.
+
+• mappedBy
+The mappedBy tells Hibernate to look at the instructorDetail property in the Instructor class.
+So Hibernate can actually use the information from the Instructor class's JoinColumn
+to figure out how to find the associated instructor. All right, so we are basically telling Hibernate,
+"Hey, this field Instructor in InstructorDetail, it's mapped by instructorDetail."
+Hibernate will go figure that out, look at the foreign key relationship, and match everything up.
+So effectively Hibernate can use this information to find out how these two items are linked up, and also finding
+the appropriate Instructor for this given InstructorDetail.
+
+• Development Process: One-to-One (Bi-Directional)
+1. Make updates to InstructorDetail class:
+ 1. Add new field to reference Instructor
+ 2. Add getter/setter methods for Instructor
+ 3. Add @OneToOne annotation
+    File: InstructorDetail.java
+    ...
+    @OneToOne(mappedBy="instructorDetail", cascade=CascadeType.ALL) // this here refers to 'instructorDetail' property in 'Instructor' class
+    private Instructor instructor; // so this means that this instructor property is mapped by the instructorDetail property in 'Instructor' class
+
+    public Instructor getInstructor() {
+      return instructor;
+    }
+
+    public void setInstructor(Instructor instructor) {
+      this.instructor = instructor;
+    }
+
+2. Define DAO interface and DAO Implementation
+File: AppDAO.java
+public interface AppDAO {
+    InstructorDetail findInstructorDetailById(int theId);
+}
+
+File: AppDAOImpl.java
+@Repository
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    public InstructorDetail findInstructorDetailById(int theId) {
+        return entityManager.find(InstructorDetail.class, theId); // here we are retrieving the instructorDetail object and it will also retrieve the associated instructor object
+    }
+} 
+
+3. Create Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            findInstructorDetailById(appDAO);
+        };
+    }
+    ...
+    private void findInstructorDetailById(AppDAO appDAO) {
+        int theId = 1;
+        System.out.println("Finding Instructor Detail with id: " + theId);
+        InstructorDetail tempInstructorDetail = appDAO.findInstructorDetailById(theId);
+        System.out.println("tempInstructorDetail: " + tempInstructorDetail);
+        System.out.println("the associated instructor: " + tempInstructorDetail.getInstructor());
+    }
+}
+
+
+-- @OneToOneMapping - Bi-Directional - Coding - Part 1
+-- @OneToOneMapping - Bi-Directional - Coding - Part 2
+Example: Updating application to add Bi-Directional relationship so that we can load an InstructorDetail first and then the associcated Instructor entity will be loaded.
+Project: 04-jpa-one-to-one-bi-find-instructor-detail
+
+
+-- @OneToOneMapping - Bi-Directional - Cascade Delete - Coding
+
+
+
+
+
+
+
+
+
 
 
 
