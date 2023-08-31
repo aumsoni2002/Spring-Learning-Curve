@@ -1,0 +1,91 @@
+package com.practice.cruddemo.dao;
+
+import com.practice.cruddemo.entity.Course;
+import com.practice.cruddemo.entity.Instructor;
+import com.practice.cruddemo.entity.InstructorDetail;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Repository     // never forgot to annotate a DAO Impl class with this annotation
+public class AppDAOImpl implements AppDAO {
+    // define field for entity manager
+    private EntityManager entityManager;
+
+    // inject entity manager using constructor injection
+    @Autowired
+    public AppDAOImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    @Override
+    @Transactional
+    // As we are performing save operation i.e. we are saving a new instructor into the database, we need this annotation
+    public void save(Instructor theInstructor) {
+        // here we are saving the new instructor object, and it will also save the instructor detail object.
+        entityManager.persist(theInstructor);
+    }
+
+    @Override
+    public Instructor findInstructorById(int theId) {
+        // now this will also return the associated entity. In our case it will return both instructor and instructor details because by default the fetch type is eager.
+        return entityManager.find(Instructor.class, theId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteInstructorById(int theId) {
+        // retrieve the instructor
+        Instructor tempInstructor = entityManager.find(Instructor.class, theId);
+
+        // delete the instructor
+        entityManager.remove(tempInstructor); // this will also remove the instructor detail object because we have put cascadeType.ALL
+    }
+
+    @Override
+    public InstructorDetail findInstructorDetailById(int theId) {
+        // here we are retrieving the instructorDetail object and it will also retrieve the associated instructor object
+        return entityManager.find(InstructorDetail.class, theId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteInstructorDetailById(int theId) {
+        // retrieve instructor detail
+        InstructorDetail tempInstructorDetail = entityManager.find(InstructorDetail.class, theId);
+
+        // remove the associated object reference, so it breaks the bidirectional link
+        tempInstructorDetail.getInstructor().setInstructorDetail(null);
+
+        // remove instructor detail
+        entityManager.remove(tempInstructorDetail); // here we are removing the instructor detail which will also remove the associated instructor
+    }
+
+    @Override
+    public List<Course> findCoursesByInstructorId(int theId) {
+        // create query to retrieve courses from database
+        TypedQuery<Course> query = entityManager.createQuery("from Course where instructor.id = :data", Course.class);
+        query.setParameter("data", theId);
+
+        // execute query
+        List<Course> courses = query.getResultList();
+
+        return courses;
+    }
+
+    @Override
+    public Instructor findInstructorByIdJoinFetch(int theId) {
+        // create query to retrieve instructor and courses from database
+        TypedQuery<Instructor> query = entityManager.createQuery("select i from Instructor i " + "JOIN Fetch i.courses " + "JOIN Fetch i.instructorDetail " + "where i.id = :data", Instructor.class);
+        query.setParameter("data", theId);
+
+        // execute query
+        Instructor instructor = query.getSingleResult();
+
+        return instructor;
+    }
+}

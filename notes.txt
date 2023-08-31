@@ -5026,10 +5026,422 @@ Project: 04-jpa-one-to-one-bi-find-instructor-detail
 
 
 -- @OneToOneMapping - Bi-Directional - Cascade Delete - Coding
+Now we are going to delete an instructor detail through cascade delete so the associated instructor will also get deleted automatically.   
+
+• Development Process
+1. Define DAO interface and DAO Implementation
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    void deleteInstructorDetailById(int theId);
+}
+
+File: AppDAOImpl.java
+@Repository
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    @Transactional
+    public void deleteInstructorDetailById(int theId) {
+        // retrieve instructor detail
+        InstructorDetail tempInstructorDetail = entityManager.find(InstructorDetail.class, theId); 
+ 
+        // delete instructor detail
+        entityManager.remove(tempInstructorDetail); // here we are removing the instructor detail which will also remove the associated instructor
+    }
+}  
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            deleteInstructorDetailById(appDAO);
+        };
+    }
+    ...
+    private void deleteInstructorDetailById(AppDAO appDAO) {
+        int theId = 2;
+        System.out.println("Delete Instructor detail with id: " + theId);
+        appDAO.deleteInstructorDetailById(theId);
+        System.out.println("Done!");
+    }
+}
+
+Example: Deleting instructor detail with cascade delete so its associated instructor will also gets deleted
+Project: 05-jpa-one-to-one-bi-delete-instructor-detail-and-instructor
+
+
+-- @OneToOneMapping - Bi-Directional - Only Delete Instructor Details - Coding
+In this scenario, we only want to delete the instructor detail but not its associated instructor.
+We can do this by doing two modification. First is we need to put remove the cascade type 'REMOVE' from the list.
+Second is we need to remove the asscociated object reference so that the bi-directional link breaks and this can be done 
+by setting the instructor_detail_id of the Instructor to null. 
+
+• Development Process
+1. Update InstructorDetail entity
+File: InstructorDetail.java
+@Entity
+@Table(name = "instructor_detail")
+public class InstructorDetail {
+    ...
+    // As we can see in below code, we have put all cascade types other than REMOVE, now when we remove the instructor detail, its associated instructor will not get deleted
+    @OneToOne(mappedBy = "instructorDetail", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    // this here refers to 'instructorDetail' property in 'Instructor' class
+    private Instructor instructor; // so this means that this instructor property is mapped by the instructorDetail property in 'Instructor' class
+
+} 
+
+2. Update DAO Implementation
+File: AppDAOImpl.java
+@Repository
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    @Transactional
+    public void deleteInstructorDetailById(int theId) {
+        // retrieve instructor detail
+        InstructorDetail tempInstructorDetail = entityManager.find(InstructorDetail.class, theId); 
+
+        // remove the associated object reference so it breaks the bi-directional link
+        tempInstructorDetail.getInstructor().setInstructorDetail(null);
+ 
+        // delete instructor detail
+        entityManager.remove(tempInstructorDetail); // here we are removing the instructor detail which will also remove the associated instructor
+    }
+}  
+
+Example: Deleting instructor detail without deleting its assicated instructor
+Project: 06-jpa-one-to-one-bi-delete-instructor-detail-only
+
+
+-- @OneToMany - Overview - Part 1
+-- @OneToMany - Overview - Part 2
+• One-to-Many Mapping
+So we'll make use of this one-to-many mappings where an instructor can have many courses.
+this will be bidirectional. So we can start with instructor, go to a course through it
+or we can start with a course and go to an instructor through it.
+
+• Many-to-One Mapping
+Many courses can have one instructor.
+This is just inverse/opposite of One-to-Many.
+But as we already know that we are assuming that one course can only have one instructor. 
+
+• Real-World Project Requirement
+If you delete an instructor, DO NOT delete the courses.
+If you delete a course, DO NOT delete the instructor.
+Which means we must not make use of cascade type 'REMOVE' in this situation.
+
+• mappedBy 
+mappedBy tells Hibernate:
+ Look at the instructor property in the Course class
+ Use information from the Course class @JoinColumn
+ To help find associated courses for instructor
+
+• Development Process: One-to-Many
+1. Prep Work-Define database tables
+The 'instructor_id' of the course table is going to be foreign key which will reference to the 'id' of the instructor table to create a link between these two tables
+File: Practice Projects\09-spring-boot-jpa-advanced-mappings\00-jpa-advanced-mappings-database-scripts\hb-03-one-to-many\creat-db.sql
+
+2. Create Course class
+File: Course.java
+@Entity
+@Table(name="course")
+public class Course {
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name="id")
+    private int id;
+
+    @Column(name="title")
+    private String title;
+
+    // this annotation means that there can be many courses mapped to one instructor
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}) 	
+    @JoinColumn(name="instructor_id") // this 'instructor_id' is going to be linked to the 'id' of the instructor class
+    private Instructor instructor;
+
+    // constructors, getters, setters
+}
+
+3. Update Instructor class: reference courses
+File: Instructor.java
+@Entity
+@Table(name = "instructor")
+public class Instructor {
+    ...
+    // this annotation means that there can only be one instructor mapped to many courses 
+    @OneToMany(mappedBy="instructor", cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}) 
+    private List<Course> courses;
+    
+    // getters, setters
+
+    // add convenience methods for bi-directional relationship
+    public void add(Course tempCourse) {
+        if(courses == null){
+         courses = new ArrayList<>();
+        }
+        
+        courses.add(tempCourse);
+        tempCourse.setInstructor(this); // this will basically set up the two-way link between the instructor and Course so that we can have access to them through both ways
+    }
+}
+
+4. Create Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            createInstructorWithCourses(appDAO);
+        };
+    }
+    ...
+    private void createInstructorWithCourses(AppDAO appDAO) {
+        // creating a new instructor
+        Instructor tempInstructor = new Instructor("Shivang", "Soni", "shivngsoni1998@gmail.com");
+
+        // creating a new instructor detail
+        InstructorDetail tempInstructorDetail = new InstructorDetail("URL2", "Playing Guitar");
+
+        // setting the new instructor detail object to our tempInstructor object
+        tempInstructor.setInstructorDetail(tempInstructorDetail);
+
+        // create some courses
+        Course tempCourse1 = new Course("Introduction to Web Development");
+        Course tempCourse2 = new Course("Data Structures and Algorithm");
+
+        // add courses to instructor
+        tempInstructor.add(tempCourse1);
+        tempInstructor.add(tempCourse2);
+
+        // save the instructor into the database
+        // NOTE: this will ALSO save the courses because of CascadeType.PERSIST
+        System.out.println("Saving instructor: " + tempInstructor);
+        System.out.println("The Courses: " + tempInstructor.getCourses());
+        appDAO.save(tempInstructor);
+        System.out.println("Done!!");
+    }
+}
+
+-- @OneToMany - Coding - Set Up Database Tables
+-- @OneToMany - Coding - Create Course entity
+-- @OneToMany - Coding - Annotate Course entity
+-- @OneToMany - Coding - Annotate Instructor entity
+-- @OneToMany - Coding - Create Main App
+-- @OneToMany - Coding - Finish Main App and Run It!
+Example: Updating our application by adding One-to-Many and Many-to-One relationship between instructor and courses
+Project: 07-jpa-one-to-many-create-instructor-with-courses
+
+
+-- @OneToMany - Fetch Types: Eager vs Lazy - Overview - Part 1
+-- @OneToMany - Fetch Types: Eager vs Lazy - Overview - Part 2
+• Fetch Types: Eager VS Lazy Loading
+When we fetch / retrieve data, should we retrieve EVERYTHING?
+ Eager will retrieve everything
+ Lazy will retrieve on request
+
+• Eager Loading
+Eager loading will load all dependent entities
+It will load instructor and all of their courses at once
+Using this type of loading can have bad impact on the performance of our application.
+
+• Lazy Loading
+Lazy loading will load the main entity first and will load all other dependent entites on demand.
+So prefer Lazy Loading instead of Eager Loading
+However, this requires an open Hibernate session that is it needs an connection to database to retrieve data
+If the Hibernate session is closed And you attempt to retrieve lazy data, Hibernate will throw an exception
+ 
+• Default Fetch Type
+Mapping		Default Fetch Type
+@OneToOne	FetchType.EAGER
+@OneToMany	FetchType.LAZY
+@ManyToOne	FetchType.EAGER
+@ManyToMany	FetchType.LAZY
+
+• Development Process
+The scenario here is that we want to fetch/find the instructors and courses linked to it. In the below 'findInstructorWithCourses()' method, we have called a function
+'appDAO.findInstructorById(theId)' which looks for the instructor and all its courses. But the issue here is that the instructor has OneToMany relation with the courses
+and the default fetch type for OneToMany relationship is LAZY, so the courses have not been loaded yet. Now if we try to print the courses with default Fetch Type, it will
+throw an error. That is why to load and print the courses, we need to change the Fetch Type to EAGER.    
+1. Update Instructor Entity
+@Entity
+@Table(name = "instructor")
+public class Instructor {
+    ...
+    @OneToMany(fetch=FetchType.EAGER, mappedBy = "instructor", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<Course> courses;
+}
+
+2. Update Main app
+File: : CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            findInstructorWithCourses(appDAO);
+        };
+    }
+    ...
+    private void findInstructorWithCourses(AppDAO appDAO){
+        int theId = 1;
+        System.out.println("Finding instructor with id: " + theId);
+        Instructor tempInstructor = appDAO.findInstructorById(theId);
+        System.out.println("tempInstructor: " + tempInstructor);
+        System.out.println("the associated courses: " + tempInstructor.getCourses());
+    }
+}
+
+-- @OneToMany: Fetch Types - Eager vs Lazy - Coding
+Example: Fetching Instructor and Courses linked to it with Fetch Type EAGER
+Project: 08-jpa-one-to-many-eager-find-instructor-with-courses
+
+
+-- @OneToMany: Lazy Find Courses - Overview
+In this scenario, we want to fetch the instructor and courses linked to it through Lazy Fetch Type.
+We do not want all courses to load at one time. But we want to have an option to load courses as needed. 
+
+• Development Process
+1. Update Instructor entity
+File: Instructor.java
+@Entity
+@Table(name = "instructor")
+public class Instructor {
+    ...
+    @OneToMany(fetch = FetchType.LAZY, // Now here we have set it back from EAGER to LAZY which is a default Fetch Type and we actully do not need to write it, But we have. 
+            mappedBy = "instructor",
+            cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}
+    )
+    private List<Course> courses;
+}
+
+2. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    List<Course> findCoursesByInstructorId(int theId);
+}
+
+File: AppDAOImpl.java
+@Repository 
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    public List<Course> findCoursesByInstructorId(int theId) {
+        // create query to retrieve courses from database
+        TypedQuery<Course> query = entityManager.createQuery("from Course where instructor.id = :data", Course.class);
+        query.setParameter("data", theId);
+
+        // execute query
+        List<Course> courses = query.getResultList();
+
+        return courses;
+    }
+}
+
+3. Update Main App
+File: : CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            findCoursesForInstructor(appDAO);
+        };
+    }
+    ...
+    public void findCoursesForInstructor(AppDAO appDAO){
+        int theId = 1;
+        System.out.println("Finding instructor with id: " + theId);
+        Instructor tempInstructor = appDAO.findInstructorById(theId);
+        System.out.println("tempInstructor: " + tempInstructor);
+
+        // As we are using Fetch Type Lazy, we need to find courses for instructor
+        System.out.println("Finding courses for instructor with id: " + theId);
+
+        // finding courses of the same above tempInstructor that we found
+        List<Course> courses = appDAO.findCoursesByInstructorId(theId);
+
+        // we need to set the courses (associate the object) that we found for our tempInstructor
+        tempInstructor.setCourses(courses);
+
+        System.out.println("the associated courses: " + tempInstructor.getCourses());
+    }
+}
 
 
 
+-- @OneToMany: Lazy Find Courses - Coding - Part 1
+-- @OneToMany: Lazy Find Courses - Coding - Part 2
+Example: Fetching the instructor and courses linked to it through Lazy Fetch Type.
+Project: 09-jpa-one-to-many-lazy-find-courses-for-instructor
 
+
+-- @OneToMany - JOIN FETCH Courses - Overview
+Here we want to update our last piece code where we have to get the instructor first and then get its courses, but instead we want to get
+the instructor and courses in a single query and also keeping the Fetch Type to LAZY. 
+
+• Development Process
+1. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    Instructor findInstructorByIdJoinFetch(int theId);
+}
+
+File: AppDAOImpl.java
+@Repository 
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    public Instructor findInstructorByIdJoinFetch(int theId) {
+        // create query to retrieve instructor and courses from database, The Join Fetch here is similar to Eager Loading.
+        TypedQuery<Instructor> query = entityManager.createQuery("select i from Instructor i " + "JOIN Fetch i.courses " + "where i.id = :data", Instructor.class);
+        query.setParameter("data", theId);
+
+        // execute query
+        Instructor instructor = query.getSingleResult();
+
+        return instructor; 
+    }
+}
+
+3. Update the Main App
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            findInstructorWithCoursesJoinFetch(appDAO);
+        };
+    }
+    ...
+    public void findInstructorWithCoursesJoinFetch(AppDAO appDAO){
+        int theId = 1;
+        System.out.println("Finding instructor with id: " + theId);
+        Instructor tempInstructor = appDAO.findInstructorByIdJoinFetch(theId);
+        System.out.println("tempInstructor: " + tempInstructor);
+        System.out.println("the associated courses: " + tempInstructor.getCourses());
+    }
+}
+
+
+-- @OneToMany - JOIN FETCH Courses - Coding - Part 1
+-- @OneToMany - JOIN FETCH Courses - Coding - Part 2
+Example: Fetching the instructor, instructorDetail and courses linked to it through Lazy Fetch Type and making use of Join Fetch in the query. 
+Project: 10-jpa-one-to-many-lazy-find-instructor-with-courses-join-fetch
+
+
+-- @OneToMany - Update Instructor
 
 
 
