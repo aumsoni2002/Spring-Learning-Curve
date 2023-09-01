@@ -94,4 +94,52 @@ public class AppDAOImpl implements AppDAO {
     public void update(Instructor tempInstructor) {
         entityManager.merge(tempInstructor);
     }
+
+    @Override
+    public Course findCourseById(int theId) {
+        // this will find the course by its own id.[Note: it will not find it by instructor's id as we did in above one of the section]
+        return entityManager.find(Course.class, theId);
+    }
+
+    @Override
+    @Transactional
+    public void update(Course tempCourse) {
+        entityManager.merge(tempCourse);
+    }
+
+    @Override
+    @Transactional
+    public void deleteInstructorWithoutCoursesById(int theId) {
+        // finding the instructor
+        Instructor tempInstructor = entityManager.find(Instructor.class, theId);
+
+        // retrieving all courses that are associated to this tempInstructor
+        List<Course> courses = tempInstructor.getCourses();
+
+        // Now that we have courses, we need to set the instructor of all these courses to null to break the association,
+        // or we will not be able to remove the instructor
+        for (Course tempCourse : courses) {
+            tempCourse.setInstructor(null);
+        }
+
+        // Now that we have break the association, we can remove the instructor from the database
+        entityManager.remove(tempInstructor);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCourseById(int theId) {
+        // retrieving the course from database
+        Course tempCourse = entityManager.find(Course.class, theId);
+
+        // removing the course from database
+        entityManager.remove(tempCourse);
+    }
+
+    @Override
+    @Transactional
+    public void save(Course theCourse) {
+        // save the course and its associated reviews
+        entityManager.persist(theCourse);    // this will save the course and its associated reviews because we have put cascase type 'ALL'
+    }
 }

@@ -41,7 +41,11 @@ public class CruddemoApplication {
 
             // findInstructorWithCoursesJoinFetch(appDAO);
 
-            updateInstructor(appDAO);
+            // updateInstructor(appDAO);
+
+            // updateCourse(appDAO);
+
+             deleteInstructorWithoutCourses(appDAO);
         };
     }
 
@@ -94,17 +98,17 @@ public class CruddemoApplication {
 
     public void createInstructorWithCourses(AppDAO appDAO) {
         // creating a new instructor
-        Instructor tempInstructor = new Instructor("Shivang", "Soni", "shivngsoni1998@gmail.com");
+        Instructor tempInstructor = new Instructor("Aum", "Soni", "aumsoni2002@gmail.com");
 
         // creating a new instructor detail
-        InstructorDetail tempInstructorDetail = new InstructorDetail("URL2", "Playing Guitar");
+        InstructorDetail tempInstructorDetail = new InstructorDetail("URL3", "Playing Basketball");
 
         // setting the new instructor detail object to our tempInstructor object
         tempInstructor.setInstructorDetail(tempInstructorDetail);
 
         // create some courses
-        Course tempCourse1 = new Course("Introduction to Web Development");
-        Course tempCourse2 = new Course("Data Structures and Algorithm");
+        Course tempCourse1 = new Course("Intro to Python");
+        Course tempCourse2 = new Course("Java Intermediate");
 
         // add courses to instructor
         tempInstructor.add(tempCourse1);
@@ -158,8 +162,26 @@ public class CruddemoApplication {
         Instructor tempInstructor = appDAO.findInstructorById(theId);
 
         System.out.println("Updating instructor's last name to 'Tester'");
-        tempInstructor.setLastName("Tester1");
+        tempInstructor.setLastName("Tester");
         appDAO.update(tempInstructor);
+    }
+
+    public void updateCourse(AppDAO appDAO) {
+        // finding the course with its own id
+        int theId = 10;
+        System.out.println("Finding course with id: " + theId);
+        Course tempCourse = appDAO.findCourseById(theId);
+
+        // updating the course with its own id.
+        System.out.println("Updating course's title to 'C++ Programming'");
+        tempCourse.setTitle("C++ Programming");
+        appDAO.update(tempCourse);
+    }
+
+    public void deleteInstructorWithoutCourses(AppDAO appDAO){
+        int theId = 1;
+        System.out.println("deleting instructor with id: " + theId);
+        appDAO.deleteInstructorWithoutCoursesById(theId);
     }
 }
 

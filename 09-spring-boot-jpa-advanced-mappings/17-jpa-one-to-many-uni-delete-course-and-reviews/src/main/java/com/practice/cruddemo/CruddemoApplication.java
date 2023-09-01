@@ -4,6 +4,7 @@ import com.practice.cruddemo.dao.AppDAO;
 import com.practice.cruddemo.entity.Course;
 import com.practice.cruddemo.entity.Instructor;
 import com.practice.cruddemo.entity.InstructorDetail;
+import com.practice.cruddemo.entity.Review;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -41,7 +42,19 @@ public class CruddemoApplication {
 
             // findInstructorWithCoursesJoinFetch(appDAO);
 
-            updateInstructor(appDAO);
+            // updateInstructor(appDAO);
+
+            // updateCourse(appDAO);
+
+            // deleteInstructorWithoutCourses(appDAO);
+
+            // deleteCourseById(appDAO);
+
+            // createCourseAndReviews(appDAO);
+
+            // retrieveCourseAndReviews(appDAO);
+
+            deleteCourseAndReviews(appDAO);
         };
     }
 
@@ -94,17 +107,17 @@ public class CruddemoApplication {
 
     public void createInstructorWithCourses(AppDAO appDAO) {
         // creating a new instructor
-        Instructor tempInstructor = new Instructor("Shivang", "Soni", "shivngsoni1998@gmail.com");
+        Instructor tempInstructor = new Instructor("Aum", "Soni", "aumsoni2002@gmail.com");
 
         // creating a new instructor detail
-        InstructorDetail tempInstructorDetail = new InstructorDetail("URL2", "Playing Guitar");
+        InstructorDetail tempInstructorDetail = new InstructorDetail("URL3", "Playing Basketball");
 
         // setting the new instructor detail object to our tempInstructor object
         tempInstructor.setInstructorDetail(tempInstructorDetail);
 
         // create some courses
-        Course tempCourse1 = new Course("Introduction to Web Development");
-        Course tempCourse2 = new Course("Data Structures and Algorithm");
+        Course tempCourse1 = new Course("Intro to Python");
+        Course tempCourse2 = new Course("Java Intermediate");
 
         // add courses to instructor
         tempInstructor.add(tempCourse1);
@@ -158,8 +171,63 @@ public class CruddemoApplication {
         Instructor tempInstructor = appDAO.findInstructorById(theId);
 
         System.out.println("Updating instructor's last name to 'Tester'");
-        tempInstructor.setLastName("Tester1");
+        tempInstructor.setLastName("Tester");
         appDAO.update(tempInstructor);
+    }
+
+    public void updateCourse(AppDAO appDAO) {
+        // finding the course with its own id
+        int theId = 10;
+        System.out.println("Finding course with id: " + theId);
+        Course tempCourse = appDAO.findCourseById(theId);
+
+        // updating the course with its own id.
+        System.out.println("Updating course's title to 'C++ Programming'");
+        tempCourse.setTitle("C++ Programming");
+        appDAO.update(tempCourse);
+    }
+
+    public void deleteInstructorWithoutCourses(AppDAO appDAO) {
+        int theId = 1;
+        System.out.println("deleting instructor with id: " + theId);
+        appDAO.deleteInstructorWithoutCoursesById(theId);
+    }
+
+    public void deleteCourseById(AppDAO appDAO) {
+        int theId = 11;
+        System.out.println("deleting course with id: " + theId);
+        appDAO.deleteCourseById(theId);
+    }
+
+    public void createCourseAndReviews(AppDAO appDAO) {
+        // create a course
+        Course tempCourse = new Course("Object Oriented Programming with C++");
+
+        // add reviews to course
+        tempCourse.addReview(new Review("The course is bad!"));
+        tempCourse.addReview(new Review("worst Course!!!!!"));
+        tempCourse.addReview(new Review("Redundant Content!!!!!!!!!!!"));
+
+        // save the course to database
+        appDAO.save(tempCourse);
+    }
+
+    public void retrieveCourseAndReviews(AppDAO appDAO) {
+        // get the course and reviews
+        int theId = 10;
+        Course tempCourse = appDAO.findCourseAndReviewsByCourseId(theId);
+
+        // print the course
+        System.out.println(tempCourse);
+
+        // print the reviews
+        System.out.println(tempCourse.getReviews());
+    }
+
+    public void deleteCourseAndReviews(AppDAO appDAO){
+        int theId = 10;
+        System.out.println("Deleting course with id: " + theId);
+        appDAO.deleteCourseById(theId);
     }
 }
 

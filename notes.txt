@@ -5415,6 +5415,7 @@ public class AppDAOImpl implements AppDAO {
 }
 
 3. Update the Main App
+File: CruddemoApplication.java
 @SpringBootApplication
 public class CruddemoApplication {
     ...
@@ -5442,6 +5443,416 @@ Project: 10-jpa-one-to-many-lazy-find-instructor-with-courses-join-fetch
 
 
 -- @OneToMany - Update Instructor
+• Update Instructor
+Find an instructor by ID
+Change the instructor's data by calling setter method(s)
+Update the instructor using the DAO
+
+• Development Process
+1. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    void update(Instructor tempInstructor);
+}
+
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    @Transactional
+    public void update(Instructor tempInstructor) {
+        entityManager.merge(tempInstructor); // the merge() method will update the existing entity
+    } 
+}
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            updateInstructor(appDAO);
+        };
+    }
+    ...
+    public void updateInstructor(AppDAO appDAO){
+        int theId = 1;
+        System.out.println("Finding instructor with id: " + theId);
+        Instructor tempInstructor = appDAO.findInstructorById(theId);
+        System.out.println("Updating instructor's last name to 'Tester'");
+        tempInstructor.setLastName("Tester");
+        appDAO.update(tempInstructor);
+    }
+}
+
+Example: Updating an existing Instructor entity's last name
+Project: 11-jpa-one-to-many-update-instructor
+
+
+-- @OneToMany - Update Course
+• Update Course
+Find a course by Id
+Change the course's data by calling setter method(s)
+Update the course using the DAO
+
+• Development Process
+1. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    Course findCourseById(int theId);
+    void update(Course tempCourse);
+}
+
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    public Course findCourseById(int theId) {
+        return entityManager.find(Course.class, theId); // this will find the course by its own id.[Note: it will not find it by instructor's id as we did in above one of the section]
+    }
+  
+    @Override
+    @Transactional
+    public void update(Course tempCourse) {
+        entityManager.merge(tempCourse); // the merge() method will update the existing entity
+    } 
+}
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            updateCourse(appDAO);
+        };
+    }
+    ...
+    public void updateCourse(AppDAO appDAO){
+        int theId = 10;
+        System.out.println("Finding course with id: " + theId);
+        Instructor tempCourse = appDAO.findCourseByInstructorId(theId);
+        System.out.println("Updating course's title to 'C++ Programming'");
+        tempCourse.setTitle("C++ Programming");
+        appDAO.update(tempCourse);
+    }
+}
+
+Example: Updating an existing course entity's title
+Project: 12-jpa-one-to-many-update-course
+
+
+-- @OneToMany - Delete Instructor
+• Delete instructor
+Find an instructor by ID
+Break association of all instructor's courses
+Delete the instructor
+
+• Development Process
+1. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    void deleteInstructorWithoutCoursesById(int theId);
+} 
+
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    @Transactional
+    public void deleteInstructorWithoutCoursesById(int theId) {
+        // finding the instructor
+        Instructor tempInstructor = entityManager.find(Instructor.class, theId);
+  		
+        // retrieving all courses that are associated to this tempInstructor
+        List<Course> courses = tempInstructor.getCourses();
+
+        // Now that we have courses, we need to set the instructor of all these courses to null to break the association or we will not be able to remove the instructor  
+        for(Course tempCourse: courses){
+           tempCourse.setInstructor(null);
+        }
+
+        // Now that we have break the association, we can remove the instructor from the database
+        entityManager.remove(tempInstructor);
+    } 
+}
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            deleteInstructorWithoutCourses(appDAO);
+        };
+    }
+    ...
+    public void deleteInstructorWithoutCourses(AppDAO appDAO){
+        int theId = 1;
+        System.out.println("deleting instructor with id: " + theId);
+        appDAO.deleteInstructorWithoutCoursesById(theId);
+    }
+}
+
+Example: deleting an existing instructor entity without deleting its associated courses
+Project: 13-jpa-one-to-many-delete-instructor
+
+
+-- @OneToMany - Delete Course
+• Delete course
+Delete the course by Id.
+
+• Development Process
+1. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    void deleteCourseById(int theId);
+} 
+
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    @Transactional
+    public void deleteCourseById(int theId) {
+        // retrieving the course from database
+        Course tempCourse = entityManager.find(Course.class, theId);
+  
+        // removing the course from database
+        entityManager.remove(tempCourse);
+    } 
+}
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            deleteCourseById(appDAO);
+        };
+    }
+    ...
+    public void deleteCourseById(AppDAO appDAO){
+        int theId = 10;
+        System.out.println("deleting course with id: " + theId);
+        appDAO.deleteCourseById(theId);
+    }
+}
+
+Example: deleting an existing course entity without deleting its associated instructor
+Project: 14-jpa-one-to-many-delete-course
+
+
+-- @OneToMany - Uni-Directional - Overview
+• One-to-Many Mapping: Uni-Directional
+For this kind of mapping we will have a course that can have many reviews and it is going to be Uni-Directional(one-way mapping)
+So we will start with course and we will go one way to the actual review(s).
+It does make sense when we delete a course, we also have to delete its review(s). Review(s) without a course does not make sense. 
+That is why we will make use of Cascade Type 'DELETE'.
+
+• @JoinColumn
+In this scenario, @JoinColumn tells Hibernate
+ Look at the course_id column in the review table
+ Use this information to help find associated reviews for a course
+Here we are suppose to put the JoinColumn annotation in the course entity, not in the review entity which is a different case from all above mappings.
+Usually we put the JoinColumn in that entity where the foreign key is, but this OneToMany mapping is uni-directional, we have to put the JoinColumn in course entity.
+Remember one thing that the name in JoinColumn annotation will always be the one which is foreign key.
+
+• Development Processs: One-to-Many
+1. Prep Work-Define database tables
+File: Practice Projects\09-spring-boot-jpa-advanced-mappings\00-jpa-advanced-mappings-database-scripts\hb-04-one-to-many-uni\create-db.sql
+Run above sql query in workbench
+
+2. Create Review class
+File: Review.java
+@Entity
+@Table(name="review")
+public class Review
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name="id")
+    private int id;
+    
+    @Column(name="comment")
+    private String comment;
+ 
+    // constructors, getters, setters
+
+3. Update Course class
+File: Course.java
+@Entity
+@Table(name = "course")
+public class Course {
+    ...
+    @OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+    @JoinColumn(name="course_id")	// this name here refers to the 'course_id' in the 'review' table
+    private List <Review> reviews;
+
+    // add convenience methods for adding reviews
+    public void addReview(Review tempReview) {
+        if(reviews == null) {
+          reviews = new ArrayList<>();
+        }
+        reviews.add(tempReview);
+    } 
+}
+
+4. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    void save(Course theCourse);
+} 
+
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    @Transactional
+    public void save(Course theCourse) {
+        // save the course and its associated reviews
+        entityManager.persist(theCourse); 	// this will save the course and its associated reviews because we have put cascase type 'ALL'
+    } 
+}
+
+5. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            createCourseAndReviews(appDAO);
+        };
+    }
+    ...
+    public void createCourseAndReviews(AppDAO appDAO){
+        // create a course
+        Course tempCourse = new Course("Object Oriented Programming with Java");
+
+        // add reviews to course
+        tempCourse.addReview(new Review ("The course is good!"));
+        tempCourse.addReview(new Review ("Awesome Course!!!!!"));
+        tempCourse.addReview(new Review ("Amazing Content!!!!!!!!!!!"));
+
+        // save the course to database
+        appDAO.save(tempCourse);   
+    }
+}
+
+-- @OneToMany - Uni-Directional - Coding - Database Set Up
+-- @OneToMany - Uni-Directional - Coding - Create Review Entity
+-- @OneToMany - Uni-Directional - Coding - Refactor Course Entity
+-- @OneToMany - Uni-Directional - Coding - Update DAO and Main App
+Example: Creating One-to-Many Uni-Directional relationship between course and review(s). Saving a new course object with its associated review(s) object
+Project: 15-jpa-one-to-many-uni-create-course-and-reviews
+
+
+-- @OneToMany - Uni-Directional - Coding - Retrieve Course and Reviews
+Now we are going to retrieve course entity and its associated reviews by course's id
+
+• Development Process
+1. Update AppDAO and AppDAOImpl
+public interface AppDAO {
+    ...
+    Course findCourseAndReviewsByCourseId(int theId);
+} 
+
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    public Course findCourseAndReviewsByCourseId(int theId) {
+        // create a query to find course and its reviews
+        TypedQuery<Course> query = entityManager.createQuery("select c from Course c " + "JOIN FETCH c.reviews " + "where c.id = :data", Course.class);
+        query.setParameter("data", theId);
+
+        // execute query 
+        Course course = query.getSingleResult();
+
+        return course; 
+    } 
+}
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            retrieveCourseAndReviews(appDAO);
+        };
+    }
+    ...
+    public void retrieveCourseAndReviews(AppDAO appDAO){
+        // get the course and reviews
+        int theId = 10;  
+        Course tempCourse = appDAO.findCourseAndReviewsByCourseId(theId);
+ 
+        // print the course
+        System.out.println(tempCourse);
+ 
+        // print the reviews   
+        System.out.println(tempCourse.getReviews());
+    }
+}
+
+Example: Retrieving Course entity and its associated reviews
+Project: 16-jpa-one-to-many-uni-retrieve-course-and-reviews
+
+
+-- @OneToMany - Uni-Directional - Coding - Delete Course and Reviews
+Now we are going to delete course entity and its associated reviews by course's id
+
+• Development Process
+1. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            deleteCourseAndReviews(appDAO);
+        };
+    }
+    ...
+    public void deleteCourseAndReviews(AppDAO appDAO){
+        // get the course and reviews
+        int theId = 10;  
+        System.out.println("Deleting course with id: " + theId);
+        appDAO.deleteCourseById(theId);
+    }
+}
+
+Example: Deleting Course entity and its associated reviews
+Project: 17-jpa-one-to-many-uni-delete-course-and-reviews
+
+
+-- @ManyToMany - Overview - Part 1
+
 
 
 
