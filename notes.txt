@@ -5852,19 +5852,307 @@ Project: 17-jpa-one-to-many-uni-delete-course-and-reviews
 
 
 -- @ManyToMany - Overview - Part 1
+-- @ManyToMany - Overview - Part 2
+• Many-to-Many Mapping
+A course can have many students
+A student can have many courses
+
+• Keep track of relationships
+We need to keep tracko of which student is in which course and vice-versa.
+For that what we can do is actually we can make use of a join table.
+So this join table is a special table that will maintain relationships between a course and students.
+If we delete a course, we do not want to delete its associated student.
+And if we delete a student, we do not want to delete its associated course.
+That is why, we must not use Cascade Type 'REMOVE' in this type of mapping.
+
+• Join Table
+A table that provides a mapping between two tables.
+It has foreign keys for each table to define the mapping relationship.
+course table		course_student table		student table
+id 			course_id			id
+title			student_id			first_name 
+instructor_id						last_name
+							email
+
+First we need to look at the 'id' of the student table and match that 'id' to the 'student_id' of the course_student table.
+Now we need to look at what the 'course_id' is for the same 'student_id' that we matched. Than simply we need to match that
+'course_id' of course_student table to the 'id' of the 'course' table 
+
+• @JoinTable Annotation
+@JoinTable in Course entity tells Hibernate
+ Look at the course_id column in the course_student table
+ For other side (inverse), look at the student_id column in the course_student table
+ Use this information to find relationship between course and students
+
+@JoinTable in Student entity tells Hibernate
+ Look at the student_id column in the course_student table
+ For other side (inverse), look at the course_id column in the course_student table
+ Use this information to find relationship between student and courses
+
+• Development Process: Many-to-Many
+1. Prep Work - Define database tables
+File: Practice Projects\09-spring-boot-jpa-advanced-mappings\00-jpa-advanced-mappings-database-scripts\hb-05-many-to-many\create-db.sql
+
+2. Update Course class
+File: Course.java
+@Entity
+@Table(name="course")
+public class Course {
+    ...
+    @ManyToMany
+    @JoinTable(
+      name="course_student",
+      joinColumns=@JoinColumn(name="course_id"),
+      inverseJoinColumns=@JoinColumn(name="student_id")
+      )
+    private List<Student> students;
+
+    // getter / setters
+    ...
+}
+
+3. Update Student class
+File: Student.java
+@Entity
+@Table(name="student")
+public class Student {
+    ...
+    @ManyToMany
+    @JoinTable(
+      name="course_student",
+      joinColumns=@JoinColumn(name="student_id"),
+      inverseJoinColumns=@JoinColumn(name="course_id")
+      )
+    private List<Course> courses;
+
+    // getter / setters
+    ...
+}
 
 
+-- @ManyToMany - Coding - Set up Database Tables
+-- @ManyToMany - Coding - Set up Spring Boot Project
+-- @ManyToMany - Coding - Create Student entity
+-- @ManyToMany - Coding - Map Course to Student
+-- @ManyToMany - Coding - Map Student to Course
+-- @ManyToMany - Coding - Create Course and Students
+Example: Adding a course and its associated student object to our database with ManyToMany Mapping relationship
+Project: 18-jpa-many-to-many-create-course-and-students
 
 
+-- @ManyToMany - Coding - Find Course and Students
+• Development Process
+1. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    Course findCourseAndStudentsByCourseId(int theId);
+} 
+
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    public Course findCourseAndStudentsByCourseId(int theId) {
+        // create a query to find course and its students
+        TypedQuery<Course> query = entityManager.createQuery("select c from Course c " + "JOIN FETCH c.students " + "where c.id = :data", Course.class);
+        query.setParameter("data", theId);
+
+        // execute query 
+        Course course = query.getSingleResult();
+
+        return course; 
+    } 
+}
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            findCourseAndStudents(appDAO);
+        };
+    }
+    ...
+    public void findCourseAndStudents(AppDAO appDAO){
+        // get the course and students
+        int theId = 10;  
+        Course tempCourse = appDAO.findCourseAndStudentsByCourseId(theId);
+ 
+        // print the course
+        System.out.println(tempCourse);
+ 
+        // print the students   
+        System.out.println(tempCourse.getStudents());
+    }
+}
+
+Example: Finding a course and its associated student object from our database with ManyToMany Mapping relationship
+Project: 19-jpa-many-to-many-find-course-and-students
 
 
+-- @ManyToMany - Coding - Find Student and Courses
+• Development Process
+1. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    Student findStudentAndCoursesByStudentId(int theId);
+} 
+
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    public Student findStudentAndCoursesByStudentId(int theId) {
+        // create a query to find student and its courses
+        TypedQuery<Student> query = entityManager.createQuery("select s from Student s " + "JOIN FETCH s.courses " + "where s.id = :data", Student.class);
+        query.setParameter("data", theId);
+
+        // execute query 
+        Student student = query.getSingleResult();
+
+        return student;
+    } 
+}
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            findStudentAndCourses(appDAO);
+        };
+    }
+    ...
+    public void findStudentAndCourses(AppDAO appDAO){
+        // get the student and courses
+        int theId = 1;  
+        Student tempStudent = appDAO.findStudentAndCoursesByStudentId(theId);
+ 
+        // print the student
+        System.out.println(tempStudent);
+ 
+        // print the courses   
+        System.out.println(tempStudent.getCourses());
+    }
+}
+
+Example: Finding a student and its associated courses object from our database with ManyToMany Mapping relationship
+Project: 20-jpa-many-to-many-find-student-and-courses
 
 
+-- @ManyToMany - Coding - Add More Courses to Students
+• Development Process
+1. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    void update(Student tempStudent);
+} 
+
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    @Transactional
+    public void update(Student tempStudent) {
+        entityManager.merge(tempStudent);
+    } 
+}
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            addMoreCoursesForStudent(appDAO);
+        };
+    }
+    ...
+    public void addMoreCoursesForStudent(AppDAO appDAO){
+        int theId = 2;
+        Student tempStudent = appDAO.findStudentAndCoursesByStudentId(theId);
+     
+        // create more courses
+        Course tempCourse1 = new Course("Rubik's Cube - How to Speed Cube");
+        Course tempCourse2 = new Course("Atari 2600 - Game Development");
+
+	// add courses to student
+        tempStudent.addCourse(tempCourse1);
+        tempStudent.addCourse(tempCourse2);
+
+        // update the existing the student table in database by adding more course
+        appDAO.update(tempStudent);
+    }
+}
+
+Example: Adding more courses to a student object in the database 
+Project: 21-jpa-many-to-many-add-more-courses-for-student
 
 
+-- @ManyToMany - Coding - Delete Course
+Example: deleting a course from the database 
+Project: 22-jpa-many-to-many-delete-course
 
 
+-- @ManyToMany - Coding - Delete Student
+• Development Process
+1. Update AppDAO and AppDAOImpl
+File: AppDAO.java
+public interface AppDAO {
+    ...
+    void deleteStudentById(int theId);
+} 
 
+File: AppDAOImpl.java
+@Repository     
+public class AppDAOImpl implements AppDAO {
+    ...
+    @Override
+    @Transactional
+    public void deleteStudentById(int theId) {
+        // retrieving the student from database
+        Student tempStudent = entityManager.find(Student.class, theId);
+
+        // removing the student from database
+        entityManager.remove(tempStudent);
+    } 
+}
+
+2. Update Main App
+File: CruddemoApplication.java
+@SpringBootApplication
+public class CruddemoApplication {
+    ...
+    public CommandLineRunner commandLineRunner(AppDAO appDAO) {
+        return runner -> {
+            ...
+            deleteStudentById(appDAO);
+        };
+    }
+    ...
+    public void deleteStudentById(AppDAO appDAO){
+        int theId = 1;
+        System.out.println("Deleting student with id: " + theId);
+        appDAO.deleteStudentById(theId);
+    }
+}
+
+Example: deleting a student from the database 
+Project: 23-jpa-many-to-many-delete-student
 
 
 

@@ -53,7 +53,15 @@ public class CruddemoApplication {
 
             // deleteCourseAndReviews(appDAO);
 
-            createCourseAndStudents(appDAO);
+            // createCourseAndStudents(appDAO);
+
+            // findCourseAndStudents(appDAO);
+
+            // findStudentAndCourses(appDAO);
+
+            // addMoreCoursesForStudent(appDAO);
+
+            deleteCourseById(appDAO);
         };
     }
 
@@ -246,8 +254,46 @@ public class CruddemoApplication {
         System.out.println("associated students: " + tempCourse.getStudents());
 
         appDAO.save(tempCourse);
+    }
 
+    public void findCourseAndStudents(AppDAO appDAO) {
+        // get the course and students
+        int theId = 10;
+        Course tempCourse = appDAO.findCourseAndStudentsByCourseId(theId);
 
+        // print the course
+        System.out.println(tempCourse);
+
+        // print the students
+        System.out.println(tempCourse.getStudents());
+    }
+
+    public void findStudentAndCourses(AppDAO appDAO){
+        // get the student and courses
+        int theId = 1;
+        Student tempStudent = appDAO.findStudentAndCoursesByStudentId(theId);
+
+        // print the student
+        System.out.println(tempStudent);
+
+        // print the courses
+        System.out.println(tempStudent.getCourses());
+    }
+
+    public void addMoreCoursesForStudent(AppDAO appDAO){
+        int theId = 2;
+        Student tempStudent = appDAO.findStudentAndCoursesByStudentId(theId);
+
+        // create more courses
+        Course tempCourse1 = new Course("Rubik's Cube - How to Speed Cube");
+        Course tempCourse2 = new Course("Atari 2600 - Game Development");
+
+        // add courses to student
+        tempStudent.addCourse(tempCourse1);
+        tempStudent.addCourse(tempCourse2);
+
+        // update the existing the student table in database by adding more course
+        appDAO.update(tempStudent);
     }
 }
 
